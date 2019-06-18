@@ -42,7 +42,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
     --with-password-argon2 --with-sodium=shared --with-curl --with-libedit \
     --with-openssl --with-zlib ${EXTRA_PHP_ARGS} \
  && JOB_COUNT=$(($(nproc) * 2)) \
- && make -j${JOB_COUNT} -s -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
+ && make -j${JOB_COUNT} -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
  && find -type f -name '*.a' -delete \
  && make install \
  && { find /usr/local/bin -type f -perm +0111 -exec strip --strip-all '{}' + || true; } \
