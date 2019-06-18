@@ -13,11 +13,11 @@ a shell script allowing for usage in the following format: `php-ext <command>` a
 # Tags:
 
 * FPM tags
-  * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`, `current-fpm`
+  * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
   * `7.2-fpm`
   * `7.1-fpm`
 * Cli tags
-  * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `current-cli`, `7.3`, `current`, `stable`, `latest`
+  * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
   * `7.2-cli`, `7.2`
   * `7.1-cli`, `7.1`
 

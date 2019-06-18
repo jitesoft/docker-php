@@ -96,8 +96,8 @@ gpg:verify:
 
 .build:cli:
   variables:
-    PHP_VERSION: 7.3.6
-    TAGS: "${PHP_VERSION}"
+    PHP_VERSION: ""
+    TAGS: ""
   dependencies:
     - gpg:verify
     - download
@@ -120,9 +120,37 @@ gpg:verify:
     - jitesoft
 
 build:cli:7.3:
+  extends: .build:cli
+  variables:
+    PHP_VERSION: "7.3.6"
+    TAGS: "7.3 7.3-cli latest latest-cli stable stable-cli cli"
+
 build:cli:7.2:
+  extends: .build:cli
+  variables:
+    PHP_VERSION: "7.2.19"
+    TAGS: "7.2 7.2-cli"
+
 build:cli:7.1:
+  extends: .build:cli
+  variables:
+    PHP_VERSION: "7.1.30"
+    TAGS: "7.1 7.1-cli"
 
 build:fpm:7.3:
+  extends: .build:fpm
+  variables:
+    PHP_VERSION: "7.3.6"
+    TAGS: "7.3-fpm fpm latest-fpm stable-fpm"
+
 build:fpm:7.2:
+  extends: .build:fpm
+  variables:
+    PHP_VERSION: "7.2.19"
+    TAGS: "7.2-fpm"
+
 build:fpm:7.1:
+  extends: .build:fpm
+  variables:
+    PHP_VERSION: "7.1.30"
+    TAGS: "7.1-fpm"
