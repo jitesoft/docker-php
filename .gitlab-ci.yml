@@ -73,6 +73,7 @@ download:
   artifacts:
     paths:
       - versions/*.tar.xz
+      - versions/*.tar.xz.asc
     expire_in: 5 days
   tags:
     - jitesoft
