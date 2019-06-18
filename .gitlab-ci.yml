@@ -65,9 +65,9 @@ download:
     - apk add --no-cache curl
   script:
     - |
-      for VERSION in "$(cat versions.txt)"; do
-        curl -sSL https://www.php.net/get/php-${VERSION}.tar.xz/from/this/mirror -o versions/php-${VERSION:0:3}.tar.xz
-        curl -sSL https://www.php.net/get/php-${VERSION}.tar.xz.asc/from/this/mirror -o versions/php-${VERSION:0:3}.tar.xz.asc
+      for version in `cat versions.txt`; do
+        curl -sSL https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
+        curl -sSL https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
       done;
   artifacts:
     paths:
