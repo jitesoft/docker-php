@@ -1,0 +1,89 @@
+variables:
+  PHP_VERSIONS: "7.3.6 7.2.19 7.1.30"
+
+stages:
+  - prebuild
+  - verify
+  - build
+
+gpg:import:
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  stage: prebuild
+  before_script:
+    - apk add --no-cache gnupg linux-headers
+  script:
+    - |
+      if [[ "$(cat keysum.txt | md5sum -c)" ]]
+      then
+        echo "Keys already imported."
+      else
+        for key in `cat gpg-keys.txt`; do
+          gpg --keyserver pgp.mit.edu --recv-keys "${key}" ||
+          gpg --keyserver keyserver.pgp.com --recv-keys "${key}" ||
+          gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}";
+        done < ./gpg-keys.txt
+        gpg --export > keys.out
+        md5sum gpgkeys.txt | tee keysum.txt
+      fi
+  cache:
+    key: php.gpg.keyring
+    paths:
+      - keys.out
+      - keysum.txt
+  artifacts:
+    paths:
+      - keys.out
+    expire_in: 5 days
+  tags:
+    - jitesoft
+
+download:
+  stage: prebuild
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  before_script:
+    - apk add --no-cache
+  script:
+    - mkdir versions
+    - |
+      for version in ${PHP_VERSIONS}; do
+        curl -OSs https://www.php.net/get/php-${version}.tar.xz/from/this/mirror
+        mv php-${version}.tar.xz versions/php-${version}.tar.xz
+      done;
+  artifacts:
+    paths:
+      - versions/*.tar.xz
+    expire_in: 5 days
+  tags:
+    - jitesoft
+
+gpg:verify:
+  stage: verify
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  dependencies:
+    - download
+    - gpg:import
+  before_script:
+    - apk add --no-cache gnupg curl grep
+  script:
+    - for i in versions/* ; do gpg --verify $i ; done
+  tags:
+    - jitesoft
+
+.build:fpm:
+  variables:
+    PHP_VERSION: 7.3.6
+  dependencies:
+    - gpg:verify
+    - download
+  stage: build
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  services:
+    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:latest
+  before_script:
+    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
+    - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
+  script:
+    - docker build -t ${CI_REGISTRY_IMAGE}:${PHP_VERSION} --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm"
+    - docker push ${CI_REGISTRY_IMAGE}:${PHP_VERSION}
+  tags:
+    - jitesoft
