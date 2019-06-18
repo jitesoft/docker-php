@@ -40,7 +40,7 @@ gpg:import:
           gpg --keyserver pgp.mit.edu --recv-keys "${key}" ||
           gpg --keyserver keyserver.pgp.com --recv-keys "${key}" ||
           gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}";
-        done < ./gpg-keys.txt
+        done
         gpg --export > keys.out
         md5sum gpg-keys.txt | tee keysum.txt
       fi
@@ -64,10 +64,11 @@ download:
   before_script:
     - apk add --no-cache curl
   script:
+    - mkdir versions
     - |
       for version in `cat versions.txt`; do
-        curl -sSL https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
-        curl -sSL https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
+        curl -L https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
+        curl -L https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
       done;
   artifacts:
     paths:
