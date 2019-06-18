@@ -41,7 +41,7 @@ download:
   stage: prebuild
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   before_script:
-    - apk add --no-cache
+    - apk add --no-cache curl
   script:
     - mkdir versions
     - |
