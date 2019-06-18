@@ -8,7 +8,7 @@ versions:
   stage: versions
   variables:
     GIT_STRATEGY: none
-    PHP_MINORS: "3 2 1"
+    PHP_MINORS: "3 2"
   before_script:
     - apk add --no-cache grep
     - mkdir versions
@@ -160,12 +160,6 @@ build:cli:7.2:
     PHP_VERSION: "7.2"
     TAGS: "7.2 7.2-cli"
 
-build:cli:7.1:
-  extends: .build:cli
-  variables:
-    PHP_VERSION: "7.1"
-    TAGS: "7.1 7.1-cli"
-
 build:fpm:7.3:
   extends: .build:fpm
   variables:
@@ -177,9 +171,3 @@ build:fpm:7.2:
   variables:
     PHP_VERSION: "7.2"
     TAGS: "7.2-fpm"
-
-build:fpm:7.1:
-  extends: .build:fpm
-  variables:
-    PHP_VERSION: "7.1"
-    TAGS: "7.1-fpm"
