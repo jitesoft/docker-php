@@ -1,10 +1,11 @@
 stages:
+  - versions
   - prebuild
   - verify
   - build
 
 versions:
-  stage: prebuild
+  stage: versions
   variables:
     GIT_STRATEGY: none
     PHP_MINORS: "3 2 1"
