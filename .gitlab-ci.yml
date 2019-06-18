@@ -104,9 +104,9 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
   services:
-    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:latest
+    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
@@ -132,9 +132,9 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
   services:
-    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:latest
+    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
