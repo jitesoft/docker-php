@@ -1,10 +1,28 @@
-variables:
-  PHP_VERSIONS: "7.3.6 7.2.19 7.1.30"
-
 stages:
   - prebuild
   - verify
   - build
+
+versions:
+  stage: prebuild
+  variables:
+    GIT_STRATEGY: none
+    PHP_MINORS: "3 2 1"
+  before_script:
+    - apk add --no-cache grep
+    - mkdir versions
+  script:
+    - |
+      for minor in $PHP_MINORS; do
+        wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[${minor}]\.[0-9]{1,2})" | awk 'NR==1{print $1}' >> versions.txt
+      done;
+  only:
+    refs:
+      - master
+  artifacts:
+    paths:
+      - versions.txt
+    expire_in: 5 days
 
 gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -40,13 +58,16 @@ gpg:import:
 download:
   stage: prebuild
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  dependencies:
+    - versions
   before_script:
     - apk add --no-cache curl
   script:
-    - mkdir versions
     - |
-      for version in ${PHP_VERSIONS}; do
-        curl -sSL https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version}.tar.xz
+      for VERSION in `cat versions.txt`; do
+        VERSION=$(cat ${FILE})
+        curl -sSL https://www.php.net/get/php-${VERSION}.tar.xz/from/this/mirror -o versions/php-${VERSION:0:3}.tar.xz
+        curl -sSL https://www.php.net/get/php-${VERSION}.tar.xz.asc/from/this/mirror -o versions/php-${VERSION:0:3}.tar.xz.asc
       done;
   artifacts:
     paths:
@@ -65,14 +86,14 @@ gpg:verify:
     - apk add --no-cache gnupg curl grep
     - gpg --import keys.out
   script:
-    - for i in versions/* ; do gpg --verify $i ; done
+    - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
   tags:
     - jitesoft
 
 .build:fpm:
   variables:
-    PHP_VERSION: 7.3.6
-    TAGS: "${PHP_VERSION}"
+    PHP_VERSION: ""
+    TAGS: ""
   dependencies:
     - gpg:verify
     - download
@@ -122,35 +143,35 @@ gpg:verify:
 build:cli:7.3:
   extends: .build:cli
   variables:
-    PHP_VERSION: "7.3.6"
+    PHP_VERSION: "7.3"
     TAGS: "7.3 7.3-cli latest latest-cli stable stable-cli cli"
 
 build:cli:7.2:
   extends: .build:cli
   variables:
-    PHP_VERSION: "7.2.19"
+    PHP_VERSION: "7.2"
     TAGS: "7.2 7.2-cli"
 
 build:cli:7.1:
   extends: .build:cli
   variables:
-    PHP_VERSION: "7.1.30"
+    PHP_VERSION: "7.1"
     TAGS: "7.1 7.1-cli"
 
 build:fpm:7.3:
   extends: .build:fpm
   variables:
-    PHP_VERSION: "7.3.6"
+    PHP_VERSION: "7.3"
     TAGS: "7.3-fpm fpm latest-fpm stable-fpm"
 
 build:fpm:7.2:
   extends: .build:fpm
   variables:
-    PHP_VERSION: "7.2.19"
+    PHP_VERSION: "7.2"
     TAGS: "7.2-fpm"
 
 build:fpm:7.1:
   extends: .build:fpm
   variables:
-    PHP_VERSION: "7.1.30"
+    PHP_VERSION: "7.1"
     TAGS: "7.1-fpm"
