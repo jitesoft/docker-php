@@ -46,7 +46,7 @@ download:
     - mkdir versions
     - |
       for version in ${PHP_VERSIONS}; do
-        curl -o versions/php-${version}.tar.xz https://www.php.net/get/php-${version}.tar.xz/from/this/mirror
+        curl -sSL https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version}.tar.xz
       done;
   artifacts:
     paths:
