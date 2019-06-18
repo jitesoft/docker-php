@@ -23,7 +23,7 @@ gpg:import:
           gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}";
         done < ./gpg-keys.txt
         gpg --export > keys.out
-        md5sum gpgkeys.txt | tee keysum.txt
+        md5sum gpg-keys.txt | tee keysum.txt
       fi
   cache:
     key: php.gpg.keyring
@@ -72,6 +72,7 @@ gpg:verify:
 .build:fpm:
   variables:
     PHP_VERSION: 7.3.6
+    TAGS: "${PHP_VERSION}"
   dependencies:
     - gpg:verify
     - download
@@ -83,7 +84,45 @@ gpg:verify:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
   script:
-    - docker build -t ${CI_REGISTRY_IMAGE}:${PHP_VERSION} --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm"
-    - docker push ${CI_REGISTRY_IMAGE}:${PHP_VERSION}
+    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm"
+    - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
+    - |
+      for tag in ${TAGS}; do
+        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/fpm:${tag}
+        docker push ${CI_REGISTRY_IMAGE}/fpm:${tag}
+      done
   tags:
     - jitesoft
+
+.build:cli:
+  variables:
+    PHP_VERSION: 7.3.6
+    TAGS: "${PHP_VERSION}"
+  dependencies:
+    - gpg:verify
+    - download
+  stage: build
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  services:
+    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:latest
+  before_script:
+    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
+    - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
+  script:
+    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg BUILD_TYPE="cli"
+    - docker push ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
+    - |
+      for tag in ${TAGS}; do
+        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/cli:${tag}
+        docker push ${CI_REGISTRY_IMAGE}/cli:${tag}
+      done
+  tags:
+    - jitesoft
+
+build:cli:7.3:
+build:cli:7.2:
+build:cli:7.1:
+
+build:fpm:7.3:
+build:fpm:7.2:
+build:fpm:7.1:
