@@ -64,6 +64,7 @@ gpg:verify:
     - gpg:import
   before_script:
     - apk add --no-cache gnupg curl grep
+    - gpg --import keys.out
   script:
     - for i in versions/* ; do gpg --verify $i ; done
   tags:
