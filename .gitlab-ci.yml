@@ -95,6 +95,7 @@ gpg:verify:
     PHP_VERSION: ""
     TAGS: ""
   dependencies:
+    - versions
     - gpg:verify
     - download
   stage: build
@@ -105,7 +106,8 @@ gpg:verify:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
   script:
-    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm"
+    - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
+    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm"
     - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
     - |
       for tag in ${TAGS}; do
