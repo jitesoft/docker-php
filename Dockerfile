@@ -39,7 +39,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
     --with-config-file-scan-dir="${PHP_INI_DIR}/conf.d" \
     --enable-option-checking=fatal \
     --with-mhash --enable-ftp --enable-mbstring --enable-mysqlnd \
-    --with-password-argon2 --with-sodium=shared --with-curl --with-libedit \
+    --with-password-argon2 --with-sodium --with-curl --with-libedit \
     --with-openssl --with-zlib ${EXTRA_PHP_ARGS} \
  && make -j2 -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
  && find -type f -name '*.a' -delete \
@@ -66,8 +66,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
       echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
       cat php-fpm.d/zz-docker.conf; \
-   fi \
- && docker-php-ext-enable sodium
+   fi
 
 STOPSIGNAL SIGQUIT
 WORKDIR /var/www/html

@@ -4,6 +4,9 @@ stages:
   - verify
   - build
 
+variables:
+  DOCKER_BUILDKIT: 1
+
 versions:
   stage: versions
   variables:
