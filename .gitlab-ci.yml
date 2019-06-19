@@ -1,8 +1,12 @@
+include:
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan.yml
+
 stages:
   - versions
   - prebuild
   - verify
   - build
+  - scan
 
 variables:
   DOCKER_BUILDKIT: 1
@@ -114,11 +118,13 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
     - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
-    - TAGS="${TAGS} ${FULL_VERSION}"
+    - TAGS="${TAGS} ${FULL_VERSION}-fpm"
     - |
       for tag in ${TAGS}; do
         docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/fpm:${tag}
+        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} jitesoft/php:${tag}
         docker push ${CI_REGISTRY_IMAGE}/fpm:${tag}
+        docker push jitesoft/php:${tag}
       done
   tags:
     - jitesoft
@@ -146,7 +152,9 @@ gpg:verify:
     - |
       for tag in ${TAGS}; do
         docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/cli:${tag}
+        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} jitesoft/php:${tag}
         docker push ${CI_REGISTRY_IMAGE}/cli:${tag}
+        docker push jitesoft/php:${tag}
       done
   tags:
     - jitesoft
@@ -174,3 +182,23 @@ build:fpm:7.2:
   variables:
     PHP_VERSION: "7.2"
     TAGS: "7.2-fpm"
+
+scan:fpm:7.2:
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm/7.2-fpm"
+
+scan:fpm:7.3:
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm/7.3-fpm"
+
+scan:cli:7.2:
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli/7.2"
+
+scan:cli:7.3:
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli/7.3"
