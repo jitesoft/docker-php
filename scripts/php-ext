@@ -13,7 +13,7 @@ shift
 
 case ${COMMAND} in
     source)
-        docker-php-ext-source $@
+        docker-php-source $@
         ;;
     install)
         docker-php-ext-install $@
@@ -22,7 +22,7 @@ case ${COMMAND} in
         docker-php-ext-configure $@
         ;;
     enable)
-        docker-php-source $@
+        docker-php-ext-enable $@
         ;;
     *)
         usage
