@@ -116,7 +116,7 @@ gpg:verify:
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
-    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
+    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --cache-from ${CI_REGISTRY_IMAGE}/fpm:${FULL_VERSION}-fpm --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
     - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
     - TAGS="${TAGS} ${FULL_VERSION}-fpm"
     - |
@@ -146,7 +146,7 @@ gpg:verify:
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
-    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-from ${CI_REGISTRY_IMAGE}/cli:${FULL_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
     - docker push ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
     - TAGS="${TAGS} ${FULL_VERSION}"
     - |
