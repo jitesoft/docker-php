@@ -65,13 +65,14 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
       cp php-fpm.d/www.conf.default php-fpm.d/www.conf; \
       echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
-      cat php-fpm.d/zz-docker.conf; \
-   fi
+   fi \
+ # To make sure that all scripts are possible to run even if file is commited with invalid access rights.
+ && chown -r +x /usr/local/bin \
+ # Sanity check...
+ && php -version
 
 STOPSIGNAL SIGQUIT
 WORKDIR /var/www/html
 EXPOSE 9000
 ENTRYPOINT ["entrypoint"]
 CMD ["php", "-a"]
-
-
