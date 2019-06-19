@@ -67,7 +67,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
    fi \
  # To make sure that all scripts are possible to run even if file is commited with invalid access rights.
- && chown -r +x /usr/local/bin \
+ && chmod -R +x /usr/local/bin \
  # Sanity check...
  && php -version
 
