@@ -8,8 +8,8 @@ stages:
   - build
   - scan
 
-variables:
-  DOCKER_BUILDKIT: 1
+#variables:
+#  DOCKER_BUILDKIT: 1
 
 versions:
   stage: versions
