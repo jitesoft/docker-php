@@ -113,6 +113,7 @@ gpg:verify:
     - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
+    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - docker pull ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}-fpm
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
@@ -144,6 +145,7 @@ gpg:verify:
     - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
+    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - docker pull ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
