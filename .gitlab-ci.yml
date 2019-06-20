@@ -192,25 +192,25 @@ scan:fpm:7.2:
   dependencies:
     - build:fpm:7.2
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm/7.2-fpm"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2-fpm"
 
 scan:fpm:7.3:
   extends: .container_scanning
   dependencies:
     - build:fpm:7.3
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm/7.3-fpm"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3-fpm"
 
 scan:cli:7.2:
   extends: .container_scanning
   dependencies:
     - build:cli:7.2
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli/7.2"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
 
 scan:cli:7.3:
   extends: .container_scanning
   dependencies:
     - build:cli:7.3
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli/7.3"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
