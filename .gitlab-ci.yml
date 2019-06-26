@@ -1,6 +1,3 @@
-include:
-  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan.yml
-
 stages:
   - versions
   - prebuild
@@ -31,6 +28,8 @@ versions:
     paths:
       - versions.txt
     expire_in: 5 days
+  tags:
+    - jitesoft
 
 gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -186,31 +185,3 @@ build:fpm:7.2:
   variables:
     PHP_VERSION: "7.2"
     TAGS: "7.2-fpm"
-
-scan:fpm:7.2:
-  extends: .container_scanning
-  dependencies:
-    - build:fpm:7.2
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2-fpm"
-
-scan:fpm:7.3:
-  extends: .container_scanning
-  dependencies:
-    - build:fpm:7.3
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3-fpm"
-
-scan:cli:7.2:
-  extends: .container_scanning
-  dependencies:
-    - build:cli:7.2
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
-
-scan:cli:7.3:
-  extends: .container_scanning
-  dependencies:
-    - build:cli:7.3
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
