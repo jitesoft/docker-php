@@ -31,6 +31,9 @@ versions:
     paths:
       - versions.txt
     expire_in: 5 days
+  tags:
+    - jitesoft
+    - ubuntu
 
 gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
