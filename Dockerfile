@@ -1,6 +1,5 @@
-ARG PHP_VERSION="7.3.6"
+ARG PHP_VERSION
 ARG BUILD_TYPE
-ARG EXTRA_PHP_ARGS
 FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
@@ -11,6 +10,10 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/php" \
       com.jitesoft.app.php.version="${PHP_VERSION}" \
       com.jitesoft.app.php.type="${BUILD_TYPE}"
+
+ARG BUILD_TYPE
+ARG PHP_VERSION
+ARG EXTRA_PHP_ARGS
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
