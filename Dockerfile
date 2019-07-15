@@ -76,6 +76,4 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
 
 STOPSIGNAL SIGQUIT
 WORKDIR /var/www/html
-EXPOSE 9000
 ENTRYPOINT ["entrypoint"]
-CMD ["php", "-a"]
