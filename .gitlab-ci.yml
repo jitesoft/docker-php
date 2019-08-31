@@ -107,26 +107,22 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
-  services:
-    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
-  before_script:
-    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
-    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-    - docker pull ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}-fpm
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
-    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --cache-from ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}-fpm --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
+    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
     - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
     - TAGS="${TAGS} ${FULL_VERSION}-fpm"
     - |
       for tag in ${TAGS}; do
         docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/fpm:${tag}
         docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} jitesoft/php:${tag}
+        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} quay.io/jitesoft/php:${tag}
         docker push ${CI_REGISTRY_IMAGE}/fpm:${tag}
         docker push jitesoft/php:${tag}
+        docker push quay.io/jitesoft/php:${tag}
       done
   tags:
     - jitesoft
@@ -140,26 +136,22 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
-  services:
-    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
-  before_script:
-    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
-    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-    - docker pull ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'CMD ["php", "-a"]' >> Dockerfile
-    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-from ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --label "com.jitesoft.app.php.type=cli" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --label "com.jitesoft.app.php.type=cli" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
     - docker push ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
     - TAGS="${TAGS} ${FULL_VERSION}"
     - |
       for tag in ${TAGS}; do
         docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/cli:${tag}
         docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} jitesoft/php:${tag}
+        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} quay.io/jitesoft/php:${tag}
         docker push ${CI_REGISTRY_IMAGE}/cli:${tag}
         docker push jitesoft/php:${tag}
+        docker push quay.io/jitesoft/php:${tag}
       done
   tags:
     - jitesoft
