@@ -1,5 +1,8 @@
 # PHP - Alpine
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/jitesoft/php.svg)](https://cloud.docker.com/u/jitesoft/repository/docker/jitesoft/php)
+[![Back project](https://img.shields.io/badge/Open%20Collective-Tip%20the%20devs!-blue.svg)](https://opencollective.com/jitesoft-open-source)
+
 This image contains php built from source on the alpine linux distro.  
 It's basically intended to be used by the `jitesoft` company and makes it possible to modify the source in an easier way for us.  
 
@@ -12,33 +15,47 @@ a shell script allowing for usage in the following format: `php-ext <command>` a
 
 ## Tags:
 
-### Tags on docker hub
+### DockerHub
 
-* FPM tags
+* FPM
   * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
   * `7.2-fpm`
-* Cli tags
+* CLI
   * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
   * `7.2-cli`, `7.2`
 
 The CLI tags are the default if not using `fpm` specific and only contains PHP as cli, that is, not modified for any other usage than direct cli access.  
 
-### Tags on gitlab
+### GitLab
 
 The images are reachable through the gitlab container registry at gitlab.com, they use the following path and tags:
 
-* FPM Tags - registry.gitlab.com/jitesoft/dockerfiles/php/fpm
+* `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
   * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
   * `7.2-fpm`
-* CLI Tags - registry.gitlab.com/jitesoft/dockerfiles/php/cli
+* `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
   * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
   * `7.2-cli`, `7.2`
+
+### Quay.io
+
+* `quay.io/jitesoft/php`
+    * FPM
+      * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
+      * `7.2-fpm`
+    * CLI
+      * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
+      * `7.2-cli`, `7.2`
+
 
 ## Image labels
 
 This image follows the [Jitesoft image label specification 1.0.0](https://gitlab.com/snippets/1866155).
 
 ## License
+
+Read the PHP license [here](https://www.php.net/license/index.php).  
+The files in this repository are released under the MIT license.
 
 ```text
 MIT License
