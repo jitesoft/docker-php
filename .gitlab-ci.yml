@@ -184,36 +184,36 @@ build:fpm:7.2:
     PHP_VERSION: "7.2"
     TAGS: "7.2-fpm"
 
-scan:7.2:fpm:
+scan:fpm:7.2:
   needs:
-    - build:7.2:fpm
+    - build:fpm:7.2
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2"
     GIT_STRATEGY: none
 
-scan:7.2:cli:
+scan:cli:7.2:
   needs:
-    - build:7.2:cli
+    - build:cli:7.2
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
     GIT_STRATEGY: none
 
-scan:7.3:fpm:
+scan:fpm:7.3:
   needs:
-    - build:7.3:fpm
+    - build:fpm:7.3
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3"
     GIT_STRATEGY: none
 
-scan:7.3:cli:
+scan:cli:7.3:
   needs:
-    - build:7.3:cli
+    - build:cli:7.3
   stage: scan
   extends: .container_scanning
   variables:
