@@ -65,6 +65,8 @@ gpg:import:
 download:
   stage: prebuild
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  variables:
+    GIT_STRATEGY: none
   dependencies:
     - versions
   before_script:
@@ -85,6 +87,8 @@ download:
     - jitesoft
 
 gpg:verify:
+  variables:
+    GIT_STRATEGY: none
   stage: verify
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   dependencies:
@@ -181,30 +185,40 @@ build:fpm:7.2:
     TAGS: "7.2-fpm"
 
 scan:7.2:fpm:
+  needs:
+    - build:7.2:fpm
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2"
-
+    GIT_STRATEGY: none
 
 scan:7.2:cli:
+  needs:
+    - build:7.2:cli
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
+    GIT_STRATEGY: none
 
 scan:7.3:fpm:
+  needs:
+    - build:7.3:fpm
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3"
-
+    GIT_STRATEGY: none
 
 scan:7.3:cli:
+  needs:
+    - build:7.3:cli
   stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
+    GIT_STRATEGY: none
 
 trigger_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -214,3 +228,5 @@ trigger_build:
   script:
     - "curl -X POST -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline"
     - "curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline"
+  variables:
+    GIT_STRATEGY: none

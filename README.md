@@ -17,12 +17,11 @@ a shell script allowing for usage in the following format: `php-ext <command>` a
 
 ### DockerHub
 
-* FPM
-  * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-  * `7.2-fpm`
-* CLI
-  * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-  * `7.2-cli`, `7.2`
+* `jitesoft/php`
+    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.2-fpm`
+    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
+    * `7.2-cli`, `7.2`
 
 The CLI tags are the default if not using `fpm` specific and only contains PHP as cli, that is, not modified for any other usage than direct cli access.  
 
@@ -31,21 +30,19 @@ The CLI tags are the default if not using `fpm` specific and only contains PHP a
 The images are reachable through the gitlab container registry at gitlab.com, they use the following path and tags:
 
 * `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
-  * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-  * `7.2-fpm`
+    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.2-fpm`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
-  * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-  * `7.2-cli`, `7.2`
+    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
+    * `7.2-cli`, `7.2`
 
 ### Quay.io
 
 * `quay.io/jitesoft/php`
-    * FPM
-      * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-      * `7.2-fpm`
-    * CLI
-      * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-      * `7.2-cli`, `7.2`
+    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.2-fpm`
+    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
+    * `7.2-cli`, `7.2`
 
 
 ## Image labels
