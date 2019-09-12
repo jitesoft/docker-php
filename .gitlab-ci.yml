@@ -1,5 +1,5 @@
 include:
-  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan.yml
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan-v2.yml
 
 stages:
   - versions
@@ -187,7 +187,6 @@ build:fpm:7.2:
 scan:fpm:7.2:
   needs:
     - build:fpm:7.2
-  stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2"
@@ -196,7 +195,6 @@ scan:fpm:7.2:
 scan:cli:7.2:
   needs:
     - build:cli:7.2
-  stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
@@ -205,7 +203,6 @@ scan:cli:7.2:
 scan:fpm:7.3:
   needs:
     - build:fpm:7.3
-  stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3"
@@ -214,7 +211,6 @@ scan:fpm:7.3:
 scan:cli:7.3:
   needs:
     - build:cli:7.3
-  stage: scan
   extends: .container_scanning
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
