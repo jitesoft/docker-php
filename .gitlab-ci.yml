@@ -38,23 +38,18 @@ gpg:import:
     - apk add --no-cache gnupg linux-headers
   script:
     - |
-      if [[ "$(cat keysum.txt | md5sum -c)" ]]
-      then
-        echo "Keys already imported."
-      else
-        for key in `cat gpg-keys.txt`; do
-          gpg --keyserver pgp.mit.edu --recv-keys "${key}" ||
-          gpg --keyserver keyserver.pgp.com --recv-keys "${key}" ||
-          gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}";
-        done
-        gpg --export > keys.out
-        md5sum gpg-keys.txt | tee keysum.txt
+      if [ -f keys.out ]; then
+        gpg --import keys.out
       fi
+    - |
+      for key in `cat gpg-keys.txt`; do
+        gpg --list-keys ${key} || (gpg --keyserver pgp.mit.edu --recv-keys "${key}" || gpg --keyserver keyserver.pgp.com --recv-keys "${key}" || gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}")
+      done
+    - gpg --export > keys.out
   cache:
     key: php.gpg.keyring
     paths:
       - keys.out
-      - keysum.txt
   artifacts:
     paths:
       - keys.out
@@ -82,7 +77,7 @@ download:
     paths:
       - versions/*.tar.xz
       - versions/*.tar.xz.asc
-    expire_in: 5 days
+    expire_in: 1 day
   tags:
     - jitesoft
 
