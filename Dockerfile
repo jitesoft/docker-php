@@ -1,6 +1,6 @@
+FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
 ARG PHP_VERSION
 ARG BUILD_TYPE
-FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
       maintainer.org.uri="https://jitesoft.com" \
@@ -35,7 +35,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
- && if [ "${BUILD_TYPE}" == "fpm" ]; then export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi"; fi \
+ && PHP_EXTRA_CONFIGURE_ARGS=$([ "${BUILD_TYPE}" == "fpm" ] && echo "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" || echo "") \
  && TARGET_ARCH=$([ "${TARGETARCH}" == "arm64" ] && echo "aarch64" || echo "${TARGETARCH}") \
  && ./configure \
     --build="${TARGET_ARCH}-linux-musl" \
@@ -44,7 +44,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
     --enable-option-checking=fatal \
     --with-mhash --enable-ftp --enable-mbstring --enable-mysqlnd \
     --with-password-argon2 --with-sodium --with-curl --with-libedit \
-    --with-openssl --with-zlib ${EXTRA_PHP_ARGS} \
+    --with-openssl --with-zlib ${PHP_EXTRA_CONFIGURE_ARGS} \
  && make -j4 -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
  && find -type f -name '*.a' -delete \
  && make install \
@@ -65,6 +65,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && rm -rf /tmp/pear ~/.pearrc \
  && cd /usr/local/etc \
  && if [ "${BUILD_TYPE}" == "fpm" ]; then \
+      echo "Is FPM build."; \
       sed 's!=NONE/!=!g' php-fpm.conf.default | tee php-fpm.conf > /dev/null; \
       cp php-fpm.d/www.conf.default php-fpm.d/www.conf; \
       echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
