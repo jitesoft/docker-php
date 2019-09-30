@@ -13,7 +13,6 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
 
 ARG BUILD_TYPE
 ARG PHP_VERSION
-ARG EXTRA_PHP_ARGS
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
@@ -35,9 +34,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
- && if [ "${BUILD_TYPE}" == "fpm" ]; then \
-       export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" \
-   fi \
+ && if [ "${BUILD_TYPE}" == "fpm" ]; then export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi"; fi \
  && ./configure \
     --build="x86_64-linux-musl" \
     --with-config-file-path="${PHP_INI_DIR}" \
