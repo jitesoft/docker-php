@@ -36,8 +36,9 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && chmod 777 /var/www/html \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
  && if [ "${BUILD_TYPE}" == "fpm" ]; then export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi"; fi \
+ && TARGET_ARCH=$([ "${TARGETARCH}" == "arm64" ] && echo "aarch64" || echo "${TARGETARCH}") \
  && ./configure \
-    --build="${TARGETARCH}-linux-musl" \
+    --build="${TARGET_ARCH}-linux-musl" \
     --with-config-file-path="${PHP_INI_DIR}" \
     --with-config-file-scan-dir="${PHP_INI_DIR}/conf.d" \
     --enable-option-checking=fatal \
