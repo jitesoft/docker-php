@@ -116,7 +116,7 @@ gpg:verify:
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm,jitesoft/php" "${FULL_VERSION}-fpm${TAGS}")
     - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
-  tags: [ jitesoft, buildx, amd64, arm64, x86, ppc64le, s390x ]
+  tags: [ jitesoft, buildx, amd64, arm64, ppc64le, s390x ]
   # TODO: Re-enable quay.
 
 .build:cli:
@@ -135,7 +135,7 @@ gpg:verify:
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper taglist "jitesoft/php,${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
     - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
-  tags: [ jitesoft, buildx, amd64, arm64, x86, ppc64le, s390x ]
+  tags: [ jitesoft, buildx, amd64, arm64, ppc64le, s390x ]
   # TODO: Re-enable quay.
 
 build:cli:7.3:
