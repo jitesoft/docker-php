@@ -13,6 +13,7 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
 
 ARG BUILD_TYPE
 ARG PHP_VERSION
+ARG TARGETARCH
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
@@ -36,7 +37,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
  && if [ "${BUILD_TYPE}" == "fpm" ]; then export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi"; fi \
  && ./configure \
-    --build="x86_64-linux-musl" \
+    --build="${TARGETARCH}-linux-musl" \
     --with-config-file-path="${PHP_INI_DIR}" \
     --with-config-file-scan-dir="${PHP_INI_DIR}/conf.d" \
     --enable-option-checking=fatal \
