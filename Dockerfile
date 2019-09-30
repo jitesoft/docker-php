@@ -21,8 +21,7 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_ASC_URI="https://www.php.net/get/php-${PHP_VERSION}.tar.xz.asc/from/this/mirror" \
     PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
     PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
-    PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie" \
-    PHP_EXTRA_CONFIGURE_ARGS="${EXTRA_PHP_ARGS}"
+    PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
 COPY ./php.tar.xz /usr/src/php.tar.xz
 COPY ./scripts/* /usr/local/bin/
@@ -36,6 +35,9 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
+ && if [ "${BUILD_TYPE}" == "fpm" ]; then \
+       export PHP_EXTRA_CONFIGURE_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" \
+   fi \
  && ./configure \
     --build="x86_64-linux-musl" \
     --with-config-file-path="${PHP_INI_DIR}" \
@@ -44,7 +46,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php \
     --with-mhash --enable-ftp --enable-mbstring --enable-mysqlnd \
     --with-password-argon2 --with-sodium --with-curl --with-libedit \
     --with-openssl --with-zlib ${EXTRA_PHP_ARGS} \
- && make -j2 -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
+ && make -j4 -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
  && find -type f -name '*.a' -delete \
  && make install \
  && { find /usr/local/bin -type f -perm +0111 -exec strip --strip-all '{}' + || true; } \

@@ -9,6 +9,9 @@ stages:
   - scan
   - notify
 
+variables:
+  PLATFORMS: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
+
 versions:
   stage: versions
   variables:
@@ -106,25 +109,15 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
-    - docker build -t ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} --label "com.jitesoft.app.php.type=fpm" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg EXTRA_PHP_ARGS="--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --disable-cgi" --build-arg BUILD_TYPE="fpm" .
-    - docker push ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION}
-    - TAGS="${TAGS} ${FULL_VERSION}-fpm"
-    - |
-      for tag in ${TAGS}; do
-        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/fpm:${tag}
-        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} jitesoft/php:${tag}
-        docker tag ${CI_REGISTRY_IMAGE}/fpm:${PHP_VERSION} quay.io/jitesoft/php:${tag}
-        docker push ${CI_REGISTRY_IMAGE}/fpm:${tag}
-        docker push jitesoft/php:${tag}
-        docker push quay.io/jitesoft/php:${tag}
-      done
-  tags:
-    - jitesoft
+    - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm,jitesoft/php" "${FULL_VERSION}-fpm${TAGS}")
+    - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+  tags: [ jitesoft, buildx, amd64, arm64, x86, ppc64le, s390x ]
+  # TODO: Re-enable quay.
 
 .build:cli:
   variables:
@@ -135,49 +128,39 @@ gpg:verify:
     - gpg:verify
     - download
   stage: build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'CMD ["php", "-a"]' >> Dockerfile
-    - docker build -t ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --label "com.jitesoft.app.php.type=cli" --label "com.jitesoft.app.php.version=${FULL_VERSION}" --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
-    - docker push ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION}
-    - TAGS="${TAGS} ${FULL_VERSION}"
-    - |
-      for tag in ${TAGS}; do
-        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} ${CI_REGISTRY_IMAGE}/cli:${tag}
-        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} jitesoft/php:${tag}
-        docker tag ${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} quay.io/jitesoft/php:${tag}
-        docker push ${CI_REGISTRY_IMAGE}/cli:${tag}
-        docker push jitesoft/php:${tag}
-        docker push quay.io/jitesoft/php:${tag}
-      done
-  tags:
-    - jitesoft
+    - TAG_LIST=$(helper taglist "jitesoft/php,${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
+    - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+  tags: [ jitesoft, buildx, amd64, arm64, x86, ppc64le, s390x ]
+  # TODO: Re-enable quay.
 
 build:cli:7.3:
   extends: .build:cli
   variables:
     PHP_VERSION: "7.3"
-    TAGS: "7.3 7.3-cli latest latest-cli stable stable-cli cli"
+    TAGS: ",7.3,7.3-cli,latest,latest-cli,stable,stable-cli,cli"
 
 build:cli:7.2:
   extends: .build:cli
   variables:
     PHP_VERSION: "7.2"
-    TAGS: "7.2 7.2-cli"
+    TAGS: ",7.2,7.2-cli"
 
 build:fpm:7.3:
   extends: .build:fpm
   variables:
     PHP_VERSION: "7.3"
-    TAGS: "7.3-fpm fpm latest-fpm stable-fpm"
+    TAGS: ",7.3-fpm,fpm,latest-fpm,stable-fpm"
 
 build:fpm:7.2:
   extends: .build:fpm
   variables:
     PHP_VERSION: "7.2"
-    TAGS: "7.2-fpm"
+    TAGS: ",7.2-fpm"
 
 scan:fpm:7.2:
   needs:

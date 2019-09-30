@@ -27,11 +27,7 @@ usage() {
     echo 'if custom ./configure arguments are necessary, see docker-php-ext-configure'
     echo
     echo 'Possible values for ext-name:'
-    find . \
-            -mindepth 2 \
-            -maxdepth 2 \
-            -type f \
-            -name 'config.m4' \
+    find . -mindepth 2 -maxdepth 2 -type f -name 'config.m4' \
         | xargs -n1 dirname \
         | xargs -n1 basename \
         | sort \
@@ -104,11 +100,7 @@ for ext in $exts; do
     [ -e Makefile ] || docker-php-ext-configure "$ext"
     make -j"$j"
     make -j"$j" install
-    find modules \
-        -maxdepth 1 \
-        -name '*.so' \
-        -exec basename '{}' ';' \
-            | xargs -r docker-php-ext-enable
+    find modules -maxdepth 1 -name '*.so' -exec basename '{}' ';' | xargs -r docker-php-ext-enable
     make -j"$j" clean
     cd "$popDir"
 done

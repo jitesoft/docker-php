@@ -13,16 +13,16 @@ shift
 
 case ${COMMAND} in
     source)
-        docker-php-source $@
+        docker-php-source "$@"
         ;;
     install)
-        docker-php-ext-install $@
+        docker-php-ext-install "$@"
         ;;
     configure)
-        docker-php-ext-configure $@
+        docker-php-ext-configure "$@"
         ;;
     enable)
-        docker-php-ext-enable $@
+        docker-php-ext-enable "$@"
         ;;
     *)
         usage
