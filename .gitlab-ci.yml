@@ -6,11 +6,12 @@ stages:
   - prebuild
   - verify
   - build
+  - build-cli
   - scan
   - notify
 
 variables:
-  PLATFORMS: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
+  PLATFORMS: "linux/amd64,linux/arm64"
 
 versions:
   stage: versions
@@ -115,9 +116,8 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm,jitesoft/php" "${FULL_VERSION}-fpm${TAGS}")
-    - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
-  tags: [ jitesoft, buildx, amd64, arm64, ppc64le, s390x ]
-  # TODO: Re-enable quay.
+    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-to=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+  tags: [ jitesoft, buildx, amd64, arm64 ]
 
 .build:cli:
   variables:
@@ -127,16 +127,15 @@ gpg:verify:
     - versions
     - gpg:verify
     - download
-  stage: build
+  stage: build-cli
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper taglist "jitesoft/php,${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
-    - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
-  tags: [ jitesoft, buildx, amd64, arm64, ppc64le, s390x ]
-  # TODO: Re-enable quay.
+    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-to=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+  tags: [ jitesoft, buildx, amd64, arm64 ]
 
 build:cli:7.3:
   extends: .build:cli
