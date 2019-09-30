@@ -116,7 +116,7 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm,jitesoft/php" "${FULL_VERSION}-fpm${TAGS}")
-    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-to=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
 
 .build:cli:
@@ -134,7 +134,7 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper taglist "jitesoft/php,${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
-    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --cache-to=${CI_REGISTRY_IMAGE}/cli:${PHP_VERSION} --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+    - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
 
 build:cli:7.3:
