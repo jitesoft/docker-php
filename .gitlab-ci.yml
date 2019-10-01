@@ -11,7 +11,7 @@ stages:
   - notify
 
 variables:
-  PLATFORMS: "linux/amd64,linux/arm64"
+  PLATFORMS: "linux/amd64,linux/arm64,linux/s390x"
 
 versions:
   stage: versions
