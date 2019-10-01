@@ -6,12 +6,11 @@ stages:
   - prebuild
   - verify
   - build
-  - build-cli
   - scan
   - notify
 
 variables:
-  PLATFORMS: "linux/amd64,linux/arm64,linux/s390x"
+  PLATFORMS: "linux/amd64,linux/arm64"
 
 versions:
   stage: versions
@@ -127,7 +126,7 @@ gpg:verify:
     - versions
     - gpg:verify
     - download
-  stage: build-cli
+  stage: build
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
