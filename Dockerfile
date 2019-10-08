@@ -2,7 +2,6 @@
 FROM --platform=$BUILDPLATFORM registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${TARGETARCH} AS compile
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
-    PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
     PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
     PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
@@ -14,7 +13,7 @@ COPY ./php.tar.xz /usr/src/php.tar.xz
 
 RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && cd /usr/src/php \
- && apk add --no-cache --virtual .build-deps argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev $PHPIZE_DEPS \
+ && apk add --no-cache --virtual .build-deps make argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev re2c pkgconf libc-dev file dpkg-dev dpkg autoconf \
  && addgroup -g 82 -S www-data \
  && adduser -u 82 -D -S -G www-data www-data \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
@@ -22,7 +21,8 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && TARGET_ARCH=$([ "${TARGETARCH}" == "arm64" ] && echo "aarch64" || echo "${TARGETARCH}") \
  && ./configure \
     --prefix=/tmp/php \
-    --build="${TARGET_ARCH}-linux-musl" \
+    --build="amd64-linux-musl" \
+    --host="${TARGET_ARCH}-linux-musl" \
     --with-config-file-path="/usr/local/etc/php" \
     --with-config-file-scan-dir="/usr/local/etc/php/conf.d" \
     --enable-option-checking=fatal \

@@ -118,6 +118,11 @@ gpg:verify:
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION}-fpm${TAGS}")
     - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
+  artifacts:
+    when: on_failure
+    paths:
+      - config.log
+    expire_in: 2 days
 
 .build:cli:
   variables:
