@@ -13,7 +13,7 @@ COPY ./php.tar.xz /usr/src/php.tar.xz
 
 RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && cd /usr/src/php \
- && apk add --no-cache --virtual .build-deps make argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev re2c pkgconf libc-dev file dpkg-dev dpkg autoconf \
+ && apk add --no-cache --virtual .build-deps make argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev re2c pkgconf libc-dev file dpkg-dev dpkg autoconf zlib-dev \
  && addgroup -g 82 -S www-data \
  && adduser -u 82 -D -S -G www-data www-data \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
