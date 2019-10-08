@@ -192,7 +192,7 @@ scan:cli:7.3:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
     GIT_STRATEGY: none
 
-trigger_build:
+.trigger_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: notify
   before_script:
