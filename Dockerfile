@@ -1,5 +1,4 @@
 # syntax = docker/dockerfile:experimental
-ARG TARGETARCH
 FROM --platform=$BUILDPLATFORM registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${TARGETARCH} AS stage0
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
