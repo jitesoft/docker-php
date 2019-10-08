@@ -11,6 +11,7 @@ ARG BUILD_TYPE
 ARG TARGETARCH
 
 COPY ./php.tar.xz /usr/src/php.tar.xz
+
 RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && cd /usr/src/php \
  && apk add --no-cache --virtual .build-deps argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev $PHPIZE_DEPS \
@@ -54,8 +55,8 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
 COPY ./scripts/* /usr/local/bin/
-COPY --from=scompile /tmp/php /usr/local
-COPY --from=scompile /usr/local/etc/php /usr/local/etc/php
+COPY --from=compile /tmp/php /usr/local
+COPY --from=compile /usr/local/etc/php /usr/local/etc/php
 COPY --from=compile /usr/src/php.tar.xz /usr/src/php.tar.xz
 
 RUN mkdir -p /var/www/html \

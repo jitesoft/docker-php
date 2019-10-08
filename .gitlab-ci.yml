@@ -14,6 +14,7 @@ variables:
 
 versions:
   stage: versions
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
     GIT_STRATEGY: none
     PHP_MINORS: "3 2"
@@ -38,7 +39,7 @@ gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: prebuild
   before_script:
-    - apk add --no-cache gnupg linux-headers
+    - apk add --no-cache gnupg
   script:
     - |
       if [ -f keys.out ]; then
@@ -65,7 +66,7 @@ download:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
     GIT_STRATEGY: none
-  dependencies:
+  needs:
     - versions
   before_script:
     - apk add --no-cache curl
@@ -89,7 +90,7 @@ gpg:verify:
     GIT_STRATEGY: none
   stage: verify
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
-  dependencies:
+  needs:
     - download
     - gpg:import
   before_script:
