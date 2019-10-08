@@ -30,7 +30,7 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && find -type f -name '*.a' -delete \
  && make install \
  && make clean \
- && cp -v php.ini-* "/usr/local/etc/php/" \
+ && cp -v php.ini-* "/usr/local/etc/php/"
 
 FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
 ARG PHP_VERSION
