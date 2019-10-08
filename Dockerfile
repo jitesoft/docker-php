@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-FROM --platform=$BUILDPLATFORM registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${TARGETARCH} AS stage0
+FROM --platform=$BUILDPLATFORM registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${TARGETARCH} AS compile
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
@@ -7,10 +7,13 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
+ARG BUILD_TYPE
+ARG TARGETARCH
+
 COPY ./php.tar.xz /usr/src/php.tar.xz
 RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && cd /usr/src/php \
- && apk add --no-cache --virtual .build-deps gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev $PHPIZE_DEPS \
+ && apk add --no-cache --virtual .build-deps argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev $PHPIZE_DEPS \
  && addgroup -g 82 -S www-data \
  && adduser -u 82 -D -S -G www-data www-data \
  && tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
@@ -18,14 +21,14 @@ RUN mkdir -p /usr/local/etc/php/conf.d /var/www/html /usr/src/php /tmp/php \
  && TARGET_ARCH=$([ "${TARGETARCH}" == "arm64" ] && echo "aarch64" || echo "${TARGETARCH}") \
  && ./configure \
     --prefix=/tmp/php \
-    --build="${TARGETARCH}-linux-musl" \
+    --build="${TARGET_ARCH}-linux-musl" \
     --with-config-file-path="/usr/local/etc/php" \
     --with-config-file-scan-dir="/usr/local/etc/php/conf.d" \
     --enable-option-checking=fatal \
     --with-mhash --enable-ftp --enable-mbstring --enable-mysqlnd \
     --with-password-argon2 --with-sodium --with-curl --with-libedit \
     --with-openssl --with-zlib ${PHP_EXTRA_CONFIGURE_ARGS} \
- && make -j4 -i -l V= 2>/dev/null | awk 'NR%20==0 {print NR,$0}' \
+ && make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}' \
  && find -type f -name '*.a' -delete \
  && make install \
  && make clean \
@@ -44,8 +47,6 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       com.jitesoft.app.php.version="${PHP_VERSION}" \
       com.jitesoft.app.php.type="${BUILD_TYPE}"
 
-ARG BUILD_TYPE
-
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
     PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
@@ -53,9 +54,9 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
 COPY ./scripts/* /usr/local/bin/
-COPY --from=stage0 /tmp/php /usr/local
-COPY --from=stage0 /usr/local/etc/php /usr/local/etc/php
-COPY --from=stage0 /usr/src/php.tar.xz /usr/src/php.tar.xz
+COPY --from=scompile /tmp/php /usr/local
+COPY --from=scompile /usr/local/etc/php /usr/local/etc/php
+COPY --from=compile /usr/src/php.tar.xz /usr/src/php.tar.xz
 
 RUN mkdir -p /var/www/html \
  && apk add --no-cache --virtual .runtime-deps ca-certificates curl tar openssl xz \
