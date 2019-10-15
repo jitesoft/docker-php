@@ -14,7 +14,6 @@ variables:
 
 versions:
   stage: versions
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
     GIT_STRATEGY: none
     PHP_MINORS: "3 2"
@@ -39,7 +38,7 @@ gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: prebuild
   before_script:
-    - apk add --no-cache gnupg
+    - apk add --no-cache gnupg linux-headers
   script:
     - |
       if [ -f keys.out ]; then
@@ -66,7 +65,7 @@ download:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
     GIT_STRATEGY: none
-  needs:
+  dependencies:
     - versions
   before_script:
     - apk add --no-cache curl
@@ -90,7 +89,7 @@ gpg:verify:
     GIT_STRATEGY: none
   stage: verify
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
-  needs:
+  dependencies:
     - download
     - gpg:import
   before_script:
@@ -115,14 +114,9 @@ gpg:verify:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
-    - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION}-fpm${TAGS}")
+    - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm,jitesoft/php" "${FULL_VERSION}-fpm${TAGS}")
     - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
-  artifacts:
-    when: on_failure
-    paths:
-      - config.log
-    expire_in: 2 days
 
 .build:cli:
   variables:
@@ -138,7 +132,7 @@ gpg:verify:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz ./php.tar.xz
     - printf 'CMD ["php", "-a"]' >> Dockerfile
-    - TAG_LIST=$(helper taglist "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
+    - TAG_LIST=$(helper taglist "jitesoft/php,${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION}${TAGS}")
     - docker buildx build --platform ${PLATFORMS} --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
 
@@ -198,7 +192,7 @@ scan:cli:7.3:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
     GIT_STRATEGY: none
 
-.trigger_build:
+trigger_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: notify
   before_script:
