@@ -10,10 +10,7 @@ stages:
   - scan
   - notify
 
-variables:
-  PLATFORMS: "linux/amd64,linux/arm64"
-
-versions:
+download:versions:
   stage: versions
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
@@ -68,7 +65,7 @@ download:
   variables:
     GIT_STRATEGY: none
   dependencies:
-    - versions
+    - download:versions
   before_script:
     - apk add --no-cache curl
   script:
@@ -105,7 +102,7 @@ gpg:verify:
 .cross:build:shared: &shared
   stage: build
   dependencies:
-    - versions
+    - download:versions
     - gpg:verify
     - download
   image: registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${ARCH}
