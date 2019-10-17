@@ -212,7 +212,7 @@ build:amd:fpm:7.2:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
+    - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)($V_REGEX\.[0-9]{1,2})" | awk 'NR==1{print $1}')
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}{TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
@@ -221,21 +221,21 @@ build:amd:fpm:7.2:
 containerize:fpm:7.3:
   extends: .containerize:fpm
   needs:
-    - versions
     - build:arm:fpm:7.3
     - build:amd:fpm:7.3
   variables:
     PHP_VERSION: "7.3"
+    V_REGEX: '7\.3'
     TAGS: ",latest,stable"
 
 containerize:fpm:7.2:
   extends: .containerize:fpm
   needs:
-    - versions
     - build:arm:fpm:7.2
     - build:amd:fpm:7.2
   variables:
     PHP_VERSION: "7.2"
+    V_REGEX: '7\.2'
     TAGS: ""
 
 #endregion
@@ -323,7 +323,7 @@ build:amd:cli:7.2:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
+    - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)($V_REGEX\.[0-9]{1,2})" | awk 'NR==1{print $1}')
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}{TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
@@ -332,21 +332,21 @@ build:amd:cli:7.2:
 containerize:cli:7.3:
   extends: .containerize:cli
   needs:
-    - versions
     - build:arm:cli:7.3
     - build:amd:cli:7.3
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
+    V_REGEX: '7\.3'
 
 containerize:cli:7.2:
   needs:
-    - versions
     - build:arm:cli:7.2
     - build:amd:cli:7.2
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.2"
+    V_REGEX: '7\.2'
     TAGS: ""
 
 #endregion
