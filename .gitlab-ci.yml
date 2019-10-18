@@ -113,7 +113,7 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
-    - [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ] && ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1 # Move to base image.
+    - if [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ]; then ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1; fi # Move to base image.
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   artifacts:
     paths:
