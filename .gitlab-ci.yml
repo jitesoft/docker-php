@@ -72,10 +72,20 @@ download:
         curl -L https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
         curl -L https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
       done;
+    - mkdir aarch x86_64
+    - |
+      for pkg in libedit libargon2 libxml curl openssl; do
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz.sig -o aarch/${pkg}.tar.gz.sig
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz -o aarch/${pkg}.tar.gz
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz.sig -o x86_64/${pkg}.tar.gz.sig
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz -o x86_64/${pkg}.tar.gz
+      done
   artifacts:
     paths:
       - versions/*.tar.xz
       - versions/*.tar.xz.asc
+      - aarch/
+      - x86_64/
     expire_in: 1 day
   tags:
     - jitesoft
@@ -93,6 +103,10 @@ gpg:verify:
     - gpg --import keys.out
   script:
     - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
+    - cd aarch64
+    - for pkg in libedit libargon2 libxml curl openssl; do gpg --verify ${pkg}.tar.gz.sig ${pkg}.tar.gz; done
+    - cd ../x86_64
+    - for pkg in libedit libargon2 libxml curl openssl; do gpg --verify ${pkg}.tar.gz.sig ${pkg}.tar.gz; done
   tags:
     - jitesoft
 
@@ -109,7 +123,6 @@ gpg:verify:
     - export PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2"
     - export LDFLAGS="-L$SYSROOT/lib -L$SYSROOT/usr/lib"
     - export CFLAGS="-I$SYSROOT/include -I$SYSROOT/usr/include"
-    - export FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
@@ -120,20 +133,12 @@ gpg:verify:
       - php-${ARCH}.tar.gz
     expire_in: 5 days
 
-
-#
-
 #region FPM
 
 .build:fpm:
   <<: *shared
   script:
-    - |
-      for pkg in libargon2 libxml curl openssl; do
-        wget "https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz" -O ${pkg}.tar.gz
-        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}
-        rm ${pkg}.tar.gz
-      done
+    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
     - cd src
     - |
       apk add --no-cache \
@@ -143,7 +148,7 @@ gpg:verify:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils libedit-dev libsodium-dev sqlite-dev re2c bison musl-dev
+        --virtual .build-deps coreutils libedit-dev libsodium-dev sqlite-dev re2c bison
     - |
       ./configure \
         --enable-fpm \
@@ -244,12 +249,7 @@ containerize:fpm:7.2:
 .build:cli:
   <<: *shared
   script:
-    - |
-      for pkg in libedit libargon2 libxml curl openssl; do
-        wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
-        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}
-        rm ${pkg}.tar.gz
-      done
+    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
     - cd src
     - |
       apk add --no-cache \
@@ -259,7 +259,7 @@ containerize:fpm:7.2:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils curl-dev libedit-dev libsodium-dev openssl-dev sqlite-dev re2c bison musl-dev
+        --virtual .build-deps coreutils curl-dev libedit-dev libsodium-dev sqlite-dev re2c bison
     - |
       ./configure \
         --with-libdir="$SYSROOT/lib" \
