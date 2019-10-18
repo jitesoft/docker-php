@@ -97,12 +97,12 @@ gpg:verify:
     - jitesoft
 
 .cross:build:shared: &shared
+  image: registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${ARCH}
   stage: build
   needs:
     - versions
     - gpg:verify
     - download
-  image: registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${ARCH}
   before_script:
     - apk add --no-cache re2c bison make xz sed tar file autoconf pkgconf dpkg coreutils wget
     - export PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
@@ -113,7 +113,7 @@ gpg:verify:
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
-    - ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1 # Move to base image.
+    - [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ] && ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1 # Move to base image.
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   artifacts:
     paths:
@@ -127,7 +127,7 @@ gpg:verify:
   script:
     - |
       for pkg in "libargon2 libxml curl openssl"; do
-        wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
+        wget "https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz" -O ${pkg}.tar.gz
         tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
         rm ${pkg}.tar.gz
       done
