@@ -120,13 +120,16 @@ gpg:verify:
       - php-${ARCH}.tar.gz
     expire_in: 5 days
 
+
+#
+
 #region FPM
 
 .build:fpm:
   <<: *shared
   script:
     - |
-      for pkg in "libargon2 libxml curl openssl"; do
+      for pkg in libargon2 libxml curl openssl; do
         wget "https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz" -O ${pkg}.tar.gz
         tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
         rm ${pkg}.tar.gz
@@ -242,7 +245,7 @@ containerize:fpm:7.2:
   <<: *shared
   script:
     - |
-      for pkg in "libedit libargon2 libxml curl openssl"; do
+      for pkg in libedit libargon2 libxml curl openssl; do
         wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
         tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
         rm ${pkg}.tar.gz
