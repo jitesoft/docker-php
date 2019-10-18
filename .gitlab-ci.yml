@@ -75,8 +75,8 @@ download:
     - mkdir aarch x86_64
     - |
       for pkg in libedit libargon2 libxml curl openssl; do
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz.sig -o aarch/${pkg}.tar.gz.sig
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz -o aarch/${pkg}.tar.gz
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz.sig -o aarch64/${pkg}.tar.gz.sig
+        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz -o aarch64/${pkg}.tar.gz
         curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz.sig -o x86_64/${pkg}.tar.gz.sig
         curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz -o x86_64/${pkg}.tar.gz
       done
