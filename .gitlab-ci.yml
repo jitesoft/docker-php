@@ -26,7 +26,7 @@ versions:
   artifacts:
     paths:
       - versions.txt
-    expire_in: 5 days
+    expire_in: 3 hours
   tags:
     - jitesoft
 
@@ -52,7 +52,7 @@ gpg:import:
   artifacts:
     paths:
       - keys.out
-    expire_in: 5 days
+    expire_in: 3 hours
   tags:
     - jitesoft
 
@@ -72,7 +72,7 @@ download:
         curl -L https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
         curl -L https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
       done;
-    - mkdir aarch x86_64
+    - mkdir aarch64 x86_64
     - |
       for pkg in libedit libargon2 libxml curl openssl; do
         curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz.sig -o aarch64/${pkg}.tar.gz.sig
