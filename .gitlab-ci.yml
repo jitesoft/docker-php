@@ -127,7 +127,7 @@ gpg:verify:
   script:
     - |
       for pkg in "libargon2 libxml curl openssl"; do
-        wget https://gitlab-cache.s3.nl-ams.scw.cloud/bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
+        wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
         tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
         rm ${pkg}.tar.gz
       done
@@ -243,7 +243,7 @@ containerize:fpm:7.2:
   script:
     - |
       for pkg in "libedit libargon2 libxml curl openssl"; do
-        wget https://gitlab-cache.s3.nl-ams.scw.cloud/bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
+        wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
         tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
         rm ${pkg}.tar.gz
       done
