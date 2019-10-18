@@ -273,7 +273,7 @@ containerize:fpm:7.2:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir \
+        --with-openssl-dir=${SYSROOT} \
         --with-sodium=shared \
         --with-password-argon2=${SYSROOT} \
         --with-libxml-dir=${SYSROOT} \
