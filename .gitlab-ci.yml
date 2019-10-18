@@ -131,7 +131,7 @@ gpg:verify:
     - |
       for pkg in libargon2 libxml curl openssl; do
         wget "https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz" -O ${pkg}.tar.gz
-        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
+        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}
         rm ${pkg}.tar.gz
       done
     - cd src
@@ -161,14 +161,14 @@ gpg:verify:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir=${SYSROOT}/usr \
+        --with-openssl-dir=${SYSROOT} \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT}/usr \
-        --with-libxml-dir=${SYSROOT}/usr \
+        --with-password-argon2=${SYSROOT} \
+        --with-libxml-dir=${SYSROOT} \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT}/usr \
-        --with-curl=${SYSROOT}/usr \
+        --with-zlib-dir=${SYSROOT} \
+        --with-curl=${SYSROOT} \
         --enable-calendar \
         --enable-ftp \
         --enable-exif \
@@ -247,7 +247,7 @@ containerize:fpm:7.2:
     - |
       for pkg in libedit libargon2 libxml curl openssl; do
         wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/${GNU_ARCH}/${pkg}.tar.gz -O ${pkg}.tar.gz
-        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}/usr
+        tar -xzhf ${pkg}.tar.gz -C ${SYSROOT}
         rm ${pkg}.tar.gz
       done
     - cd src
@@ -275,13 +275,13 @@ containerize:fpm:7.2:
         --with-openssl \
         --with-openssl-dir \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT}/usr \
-        --with-libxml-dir=${SYSROOT}/usr \
+        --with-password-argon2=${SYSROOT} \
+        --with-libxml-dir=${SYSROOT} \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT}/usr \
+        --with-zlib-dir=${SYSROOT} \
         --with-curl \
-        --with-libedit=${SYSROOT}/usr \
+        --with-libedit=${SYSROOT} \
         --enable-calendar \
         --enable-ftp \
         --enable-exif \
