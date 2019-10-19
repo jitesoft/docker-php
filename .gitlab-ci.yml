@@ -152,7 +152,7 @@ gpg:verify:
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
-        --no-scripts \
+        ${EXTRA_APK_ARGS} \
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
@@ -186,12 +186,12 @@ gpg:verify:
         --enable-ftp \
         --enable-mbstring \
         --enable-mysqlnd
-     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
-     - find -type f -name '*.a' -delete
-     - make install
-     - cp src/php.ini-* /usr/local/
-     - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
-     - mv /tmp/php-${ARCH}.tar.gz .
+    - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
+    - find -type f -name '*.a' -delete
+    - make install
+    - cp src/php.ini-* /usr/local/
+    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
+    - mv /tmp/php-${ARCH}.tar.gz .
 
 build:arm:fpm:7.3:
   extends: .build:fpm
@@ -265,6 +265,7 @@ containerize:fpm:7.2:
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
+        ${EXTRA_APK_ARGS} \
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
