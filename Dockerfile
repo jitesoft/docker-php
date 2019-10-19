@@ -1,6 +1,7 @@
 FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
 ARG PHP_VERSION
 ARG BUILD_TYPE
+ARG TARGETARCH
 
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
