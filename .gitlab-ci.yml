@@ -130,6 +130,7 @@ gpg:verify:
 .build:fpm:
   <<: *shared
   script:
+    - cd src
     -|
       ./configure \
         --enable-fpm \
@@ -232,6 +233,7 @@ containerize:fpm:7.2:
 .build:cli:
   <<: *shared
   script:
+    - cd src
     - |
       ./configure \
         --with-libdir="$SYSROOT/lib" \
