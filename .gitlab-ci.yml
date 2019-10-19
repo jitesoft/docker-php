@@ -119,9 +119,9 @@ gpg:verify:
     - download
   before_script:
     - apk add --no-cache re2c bison make xz sed tar file autoconf pkgconf dpkg coreutils wget
-    - export CPPFLAGS="${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
-    - export LDFLAGS="${LDFLAGS} -L$SYSROOT/lib -L$SYSROOT/usr/lib"
-    - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2 -I$SYSROOT/include -I$SYSROOT/usr/include -I$SYSROOT/usr/include/libxml2"
+    - export CPPFLAGS="--sysroot=$SYSROOT ${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
+    - export LDFLAGS="--sysroot=$SYSROOT ${LDFLAGS} -L$SYSROOT/lib -L$SYSROOT/usr/lib"
+    - export CFLAGS="--sysroot=$SYSROOT ${CFLAGS} -fstack-protector-strong -fpic -fpie -O2 -I$SYSROOT/include -I$SYSROOT/usr/include -I$SYSROOT/usr/include/libxml2"
     - export PKG_CONFIG_PATH="$SYSROOT/usr/lib/pkgconfig"
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
@@ -131,6 +131,8 @@ gpg:verify:
   after_script:
     - if [ ! -f src/config.log ]; then touch src/config.log; fi
     - mv src/config.log .
+    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
+    - mv /tmp/php-${ARCH}.tar.gz .
   artifacts:
     paths:
       - php-${ARCH}.tar.gz
@@ -145,8 +147,9 @@ gpg:verify:
   script:
     - for pkg in libedit libxml libargon2; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
+    - EXTRA_PKGS=""
     - EXTRA_APK_ARGS="--no-scripts"
-    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; fi
+    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; EXTRA_PKGS="libxml2-dev"; fi
     - |
       apk add --no-cache \
         --repositories-file /etc/apk/repositories \
@@ -156,7 +159,7 @@ gpg:verify:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
+        --virtual .build-deps ${EXTRA_PKGS} coreutils libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
     - |
       ./configure \
         --enable-fpm \
@@ -182,6 +185,7 @@ gpg:verify:
         --with-zlib \
         --with-zlib-dir=${SYSROOT}/usr \
         --with-curl \
+        --enable-exif \
         --enable-calendar \
         --enable-ftp \
         --enable-mbstring \
@@ -189,9 +193,7 @@ gpg:verify:
     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
-    - cp src/php.ini-* /usr/local/
-    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
-    - mv /tmp/php-${ARCH}.tar.gz .
+    - cp php.ini-* /usr/local/
 
 build:arm:fpm:7.3:
   extends: .build:fpm
@@ -258,8 +260,9 @@ containerize:fpm:7.2:
   script:
     - for pkg in libedit libxml libargon2; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
+    - EXTRA_PKGS=""
     - EXTRA_APK_ARGS="--no-scripts"
-    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; fi
+    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; EXTRA_PKGS="libxml2-dev"; fi
     - |
       apk add --no-cache \
         --repositories-file /etc/apk/repositories \
@@ -269,7 +272,7 @@ containerize:fpm:7.2:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils curl-dev libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
+        --virtual .build-deps ${EXTRA_PKGS} coreutils curl-dev libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
     - |
       ./configure \
         --with-libdir="$SYSROOT/lib" \
@@ -293,15 +296,14 @@ containerize:fpm:7.2:
         --with-curl \
         --with-libedit=${SYSROOT}/usr \
         --enable-calendar \
+        --enable-exif \
         --enable-ftp \
         --enable-mbstring \
         --enable-mysqlnd
     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
-    - cp src/php.ini-* /usr/local/
-    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
-    - mv /tmp/php-${ARCH}.tar.gz .
+    - cp php.ini-* /usr/local/
 
 build:arm:cli:7.3:
   extends: .build:cli
