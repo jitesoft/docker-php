@@ -84,7 +84,7 @@ download:
     paths:
       - versions/*.tar.xz
       - versions/*.tar.xz.asc
-      - aarch/
+      - aarch64/
       - x86_64/
     expire_in: 1 day
   tags:
