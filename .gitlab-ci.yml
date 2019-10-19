@@ -72,14 +72,6 @@ download:
         curl -L https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
         curl -L https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
       done;
-    - mkdir aarch64 x86_64
-    - |
-      for pkg in libedit libargon2 libxml curl openssl; do
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz.sig -o aarch64/${pkg}.tar.gz.sig
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/aarch64/${pkg}.tar.gz -o aarch64/${pkg}.tar.gz
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz.sig -o x86_64/${pkg}.tar.gz.sig
-        curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/x86_64/${pkg}.tar.gz -o x86_64/${pkg}.tar.gz
-      done
   artifacts:
     paths:
       - versions/*.tar.xz
@@ -103,30 +95,23 @@ gpg:verify:
     - gpg --import keys.out
   script:
     - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
-    - cd aarch64
-    - for pkg in libedit libargon2 libxml curl openssl; do gpg --verify ${pkg}.tar.gz.sig ${pkg}.tar.gz; done
-    - cd ../x86_64
-    - for pkg in libedit libargon2 libxml curl openssl; do gpg --verify ${pkg}.tar.gz.sig ${pkg}.tar.gz; done
   tags:
     - jitesoft
 
 .cross:build:shared: &shared
-  image: registry.gitlab.com/jitesoft/dockerfiles/cross-compile:${ARCH}
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: build
   needs:
     - versions
     - gpg:verify
     - download
   before_script:
-    - apk add --no-cache re2c bison make xz sed tar file autoconf pkgconf dpkg coreutils wget
-    - export CPPFLAGS="--sysroot=$SYSROOT ${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
-    - export LDFLAGS="--sysroot=$SYSROOT ${LDFLAGS} -L$SYSROOT/lib -L$SYSROOT/usr/lib"
-    - export CFLAGS="--sysroot=$SYSROOT ${CFLAGS} -fstack-protector-strong -fpic -fpie -O2 -I$SYSROOT/include -I$SYSROOT/usr/include -I$SYSROOT/usr/include/libxml2"
-    - export PKG_CONFIG_PATH="$SYSROOT/usr/lib/pkgconfig"
+    - apk add --no-cache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
+    - export PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2"
+    - export PHP_CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
-    - if [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ]; then ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1; fi # Move to base image.
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   after_script:
     - if [ ! -f src/config.log ]; then touch src/config.log; fi
@@ -145,45 +130,28 @@ gpg:verify:
 .build:fpm:
   <<: *shared
   script:
-    - for pkg in libedit libxml libargon2; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
-    - cd src
-    - EXTRA_PKGS=""
-    - EXTRA_APK_ARGS="--no-scripts"
-    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; EXTRA_PKGS="libxml2-dev"; fi
-    - |
-      apk add --no-cache \
-        --repositories-file /etc/apk/repositories \
-        --keys-dir /etc/apk/keys \
-        --initdb \
-        ${EXTRA_APK_ARGS} \
-        --allow-untrusted \
-        --root ${SYSROOT} \
-        --arch ${GNU_ARCH} \
-        --virtual .build-deps ${EXTRA_PKGS} coreutils libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
-    - |
+    -|
       ./configure \
         --enable-fpm \
         --with-fpm-user=www-data \
         --with-fpm-group=www-data \
         --disable-cgi \
-        --with-libdir="$SYSROOT/lib" \
         --prefix=/usr/local \
         --disable-short-tags \
-        --build="x86_64-linux-musl" \
-        --host="${GNU_TRIPLET}" \
+        --build="$(cat /etc/apk/arch)-linux-musl" \
+        --host="$(cat /etc/apk/arch)-linux-musl" \
         --with-config-file-path=/usr/local/etc/php \
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT}/usr \
-        --with-libxml-dir=${SYSROOT}/usr \
+        --with-password-argon2 \
+        --with-libxml-dir \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT}/usr \
+        --with-zlib-dir \
         --with-curl \
         --enable-exif \
         --enable-calendar \
@@ -200,6 +168,9 @@ build:arm:fpm:7.3:
   variables:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
+  tags:
+    - aarch64
+    - aarch64-native
 
 build:amd:fpm:7.3:
   extends: .build:fpm
@@ -212,6 +183,9 @@ build:arm:fpm:7.2:
   variables:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
+  tags:
+    - aarch64
+    - aarch64-native
 
 build:amd:fpm:7.2:
   extends: .build:fpm
@@ -258,43 +232,25 @@ containerize:fpm:7.2:
 .build:cli:
   <<: *shared
   script:
-    - for pkg in libedit libxml libargon2; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
-    - cd src
-    - EXTRA_PKGS=""
-    - EXTRA_APK_ARGS="--no-scripts"
-    - if [ "${GNU_ARCH}" == "$(cat /etc/apk/arch)" ]; then EXTRA_APK_ARGS=""; EXTRA_PKGS="libxml2-dev"; fi
-    - |
-      apk add --no-cache \
-        --repositories-file /etc/apk/repositories \
-        --keys-dir /etc/apk/keys \
-        --initdb \
-        ${EXTRA_APK_ARGS} \
-        --allow-untrusted \
-        --root ${SYSROOT} \
-        --arch ${GNU_ARCH} \
-        --virtual .build-deps ${EXTRA_PKGS} coreutils curl-dev libedit-dev curl-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
     - |
       ./configure \
         --with-libdir="$SYSROOT/lib" \
         --prefix=/usr/local \
         --disable-short-tags \
-        --build="x86_64-linux-musl" \
-        --host="${GNU_TRIPLET}" \
+        --build="$(cat /etc/apk/arch)-linux-musl" \
+        --host="$(cat /etc/apk/arch)-linux-musl" \
         --with-config-file-path=/usr/local/etc/php \
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir=${SYSROOT}/usr \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT}/usr \
-        --with-libxml-dir=${SYSROOT}/usr \
+        --with-password-argon2 \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT}/usr \
         --with-curl \
-        --with-libedit=${SYSROOT}/usr \
+        --with-libedit \
         --enable-calendar \
         --enable-exif \
         --enable-ftp \
