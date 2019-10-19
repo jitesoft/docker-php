@@ -141,7 +141,8 @@ gpg:verify:
   script:
     - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
     - cd src
-    - apk add --no-cache \
+    - |
+      apk add --no-cache \
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
@@ -150,7 +151,8 @@ gpg:verify:
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
         --virtual .build-deps coreutils libedit-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
-    - ./configure \
+    - |
+      ./configure \
         --enable-fpm \
         --with-fpm-user=www-data \
         --with-fpm-group=www-data \
@@ -252,7 +254,8 @@ containerize:fpm:7.2:
   script:
     - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
     - cd src
-    - apk add --no-cache \
+    - |
+      apk add --no-cache \
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
@@ -261,7 +264,8 @@ containerize:fpm:7.2:
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
         --virtual .build-deps coreutils curl-dev libedit-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
-    - ./configure \
+    - |
+      ./configure \
         --with-libdir="$SYSROOT/lib" \
         --prefix=/usr/local \
         --disable-short-tags \
