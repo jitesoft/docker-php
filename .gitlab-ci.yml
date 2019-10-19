@@ -145,6 +145,7 @@ gpg:verify:
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
+        --no-commit-hooks \
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
@@ -256,6 +257,7 @@ containerize:fpm:7.2:
         --repositories-file /etc/apk/repositories \
         --keys-dir /etc/apk/keys \
         --initdb \
+        --no-commit-hooks \
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
