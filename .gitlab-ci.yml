@@ -266,6 +266,9 @@ build:arm:cli:7.3:
   variables:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
+  tags:
+    - aarch64
+    - aarch64-native
 
 build:amd:cli:7.3:
   extends: .build:cli
@@ -278,6 +281,9 @@ build:arm:cli:7.2:
   variables:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
+  tags:
+    - aarch64
+    - aarch64-native
 
 build:amd:cli:7.2:
   extends: .build:cli
