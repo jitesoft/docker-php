@@ -127,6 +127,9 @@ gpg:verify:
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - if [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ]; then ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1; fi # Move to base image.
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
+  after_script:
+    - if [ ! -f src/config.log ] && touch src/config.log
+    - mv src/config.log .
   artifacts:
     paths:
       - php-${ARCH}.tar.gz
@@ -139,7 +142,7 @@ gpg:verify:
 .build:fpm:
   <<: *shared
   script:
-    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
+    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
     - |
       apk add --no-cache \
@@ -168,14 +171,14 @@ gpg:verify:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir=${SYSROOT} \
+        --with-openssl-dir=${SYSROOT}/usr \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT} \
-        --with-libxml-dir=${SYSROOT} \
+        --with-password-argon2=${SYSROOT}/usr \
+        --with-libxml-dir=${SYSROOT}/usr \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT} \
-        --with-curl=${SYSROOT} \
+        --with-zlib-dir=${SYSROOT}/usr \
+        --with-curl=${SYSROOT}/usr \
         --enable-calendar \
         --enable-ftp \
         --enable-exif \
@@ -187,7 +190,6 @@ gpg:verify:
       - cp src/php.ini-* /usr/local/
       - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
       - mv /tmp/php-${ARCH}.tar.gz .
-      - if [ ! -f config.log ] && touch config.log
 
 build:arm:fpm:7.3:
   extends: .build:fpm
@@ -252,7 +254,7 @@ containerize:fpm:7.2:
 .build:cli:
   <<: *shared
   script:
-    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}; done
+    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
     - |
       apk add --no-cache \
@@ -277,15 +279,15 @@ containerize:fpm:7.2:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir=${SYSROOT} \
+        --with-openssl-dir=${SYSROOT}/usr \
         --with-sodium=shared \
-        --with-password-argon2=${SYSROOT} \
-        --with-libxml-dir=${SYSROOT} \
+        --with-password-argon2=${SYSROOT}/usr \
+        --with-libxml-dir=${SYSROOT}/usr \
         --with-mysqli \
         --with-zlib \
-        --with-zlib-dir=${SYSROOT} \
+        --with-zlib-dir=${SYSROOT}/usr \
         --with-curl \
-        --with-libedit=${SYSROOT} \
+        --with-libedit=${SYSROOT}/usr \
         --enable-calendar \
         --enable-ftp \
         --enable-exif \
