@@ -128,7 +128,7 @@ gpg:verify:
     - if [ ! -f /lib/ld-musl-${GNU_ARCH}.so.1 ]; then ln -fs ${SYSROOT}/lib/ld-musl-${GNU_ARCH}.so.1 /lib/ld-musl-${GNU_ARCH}.so.1; fi # Move to base image.
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   after_script:
-    - if [ ! -f src/config.log ] && touch src/config.log
+    - if [ ! -f src/config.log ]; then touch src/config.log; fi
     - mv src/config.log .
   artifacts:
     paths:
@@ -142,7 +142,7 @@ gpg:verify:
 .build:fpm:
   <<: *shared
   script:
-    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
+    - for pkg in libedit libargon2 libxml; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
     - |
       apk add --no-cache \
@@ -153,7 +153,7 @@ gpg:verify:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils libedit-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
+        --virtual .build-deps coreutils libedit-dev curl-dev libxml2-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
     - |
       ./configure \
         --enable-fpm \
@@ -171,17 +171,16 @@ gpg:verify:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-openssl-dir=${SYSROOT}/usr \
+        --with-openssl-dir \
         --with-sodium=shared \
         --with-password-argon2=${SYSROOT}/usr \
         --with-libxml-dir=${SYSROOT}/usr \
         --with-mysqli \
         --with-zlib \
         --with-zlib-dir=${SYSROOT}/usr \
-        --with-curl=${SYSROOT}/usr \
+        --with-curl \
         --enable-calendar \
         --enable-ftp \
-        --enable-exif \
         --enable-mbstring \
         --enable-mysqlnd
       - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
@@ -254,7 +253,7 @@ containerize:fpm:7.2:
 .build:cli:
   <<: *shared
   script:
-    - for pkg in libedit libargon2 libxml curl openssl; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
+    - for pkg in libedit libargon2 libxml; do tar -xzhf ${GNU_ARCH}/${pkg}.tar.gz -C ${SYSROOT}/usr; done
     - cd src
     - |
       apk add --no-cache \
@@ -265,7 +264,7 @@ containerize:fpm:7.2:
         --allow-untrusted \
         --root ${SYSROOT} \
         --arch ${GNU_ARCH} \
-        --virtual .build-deps coreutils curl-dev libedit-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
+        --virtual .build-deps coreutils curl-dev libedit-dev curl-dev libxml2-dev openssl-dev libsodium-dev sqlite-dev re2c bison || echo "Install errors are okay, as only libs are needed!"
     - |
       ./configure \
         --with-libdir="$SYSROOT/lib" \
@@ -290,7 +289,6 @@ containerize:fpm:7.2:
         --with-libedit=${SYSROOT}/usr \
         --enable-calendar \
         --enable-ftp \
-        --enable-exif \
         --enable-mbstring \
         --enable-mysqlnd
     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
