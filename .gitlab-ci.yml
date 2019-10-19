@@ -181,7 +181,6 @@ build:arm:fpm:7.3:
     ARCH: "arm64"
     BUILD_TYPE: fpm
   tags:
-    - aarch64
     - aarch64-native
 
 build:amd:fpm:7.3:
@@ -198,7 +197,6 @@ build:arm:fpm:7.2:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
   tags:
-    - aarch64
     - aarch64-native
 
 build:amd:fpm:7.2:
@@ -283,7 +281,6 @@ build:arm:cli:7.3:
     ARCH: "arm64"
     BUILD_TYPE: cli
   tags:
-    - aarch64
     - aarch64-native
 
 build:amd:cli:7.3:
@@ -300,7 +297,6 @@ build:arm:cli:7.2:
     ARCH: "arm64"
     BUILD_TYPE: cli
   tags:
-    - aarch64
     - aarch64-native
 
 build:amd:cli:7.2:
