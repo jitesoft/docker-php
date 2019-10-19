@@ -106,7 +106,12 @@ gpg:verify:
     - gpg:verify
     - download
   before_script:
-    - apk add --no-cache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
+    - apk add --no-cache ccache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
+    - if [ ! -d "ccache" ]; then mkdir ccache; fi
+    - export PATH="/usr/lib/ccache/bin:$PATH"
+    - export CCACHE_RECACHE="yes"
+    - export CCACHE_DIR="$(pwd)/ccache"
+    - ccache -s
     - export PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2"
     - export PHP_CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
@@ -114,10 +119,15 @@ gpg:verify:
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   after_script:
+    - ccache -s
     - if [ ! -f src/config.log ]; then touch src/config.log; fi
     - mv src/config.log .
     - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
     - mv /tmp/php-${ARCH}.tar.gz .
+  cache:
+    paths:
+      - ccache
+    key: php.build.ccache-${ARCH}-${BUILD_TYPE}
   artifacts:
     paths:
       - php-${ARCH}.tar.gz
@@ -169,6 +179,7 @@ build:arm:fpm:7.3:
   variables:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
+    BUILD_TYPE: fpm
   tags:
     - aarch64
     - aarch64-native
@@ -176,12 +187,14 @@ build:arm:fpm:7.3:
 build:amd:fpm:7.3:
   extends: .build:fpm
   variables:
+    BUILD_TYPE: fpm
     PHP_VERSION: "7.3"
     ARCH: "amd64"
 
 build:arm:fpm:7.2:
   extends: .build:fpm
   variables:
+    BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "arm64"
   tags:
@@ -191,6 +204,7 @@ build:arm:fpm:7.2:
 build:amd:fpm:7.2:
   extends: .build:fpm
   variables:
+    BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "amd64"
 
@@ -236,7 +250,6 @@ containerize:fpm:7.2:
     - cd src
     - |
       ./configure \
-        --with-libdir="$SYSROOT/lib" \
         --prefix=/usr/local \
         --disable-short-tags \
         --build="$(cat /etc/apk/arch)-linux-musl" \
@@ -268,6 +281,7 @@ build:arm:cli:7.3:
   variables:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
+    BUILD_TYPE: cli
   tags:
     - aarch64
     - aarch64-native
@@ -277,12 +291,14 @@ build:amd:cli:7.3:
   variables:
     PHP_VERSION: "7.3"
     ARCH: "amd64"
+    BUILD_TYPE: cli
 
 build:arm:cli:7.2:
   extends: .build:cli
   variables:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
+    BUILD_TYPE: cli
   tags:
     - aarch64
     - aarch64-native
@@ -292,6 +308,7 @@ build:amd:cli:7.2:
   variables:
     PHP_VERSION: "7.2"
     ARCH: "amd64"
+    BUILD_TYPE: cli
 
 .containerize:cli:
   stage: containerize
