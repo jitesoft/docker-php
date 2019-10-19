@@ -131,7 +131,7 @@ gpg:verify:
   <<: *shared
   script:
     - cd src
-    -|
+    - |
       ./configure \
         --enable-fpm \
         --with-fpm-user=www-data \
