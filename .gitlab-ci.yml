@@ -29,6 +29,12 @@ versions:
     expire_in: 3 hours
   tags:
     - jitesoft
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"
 
 gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -55,6 +61,12 @@ gpg:import:
     expire_in: 3 hours
   tags:
     - jitesoft
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"'
 
 download:
   stage: prebuild
@@ -79,6 +91,12 @@ download:
     expire_in: 1 day
   tags:
     - jitesoft
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"
 
 gpg:verify:
   variables:
@@ -95,6 +113,12 @@ gpg:verify:
     - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
   tags:
     - jitesoft
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"
 
 .cross:build:shared: &shared
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -107,7 +131,6 @@ gpg:verify:
     - apk add --no-cache ccache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
     - export PATH="/usr/lib/ccache/bin:$PATH"
-    - export CCACHE_RECACHE="yes"
     - export CCACHE_DIR="$(pwd)/ccache"
     - ccache -s
     - export PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2"
@@ -120,18 +143,47 @@ gpg:verify:
     - ccache -s
     - if [ ! -f src/config.log ]; then touch src/config.log; fi
     - mv src/config.log .
-    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
-    - mv /tmp/php-${ARCH}.tar.gz .
+    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz *)
+    - mv /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz .
   cache:
     paths:
       - ccache
     key: php.build.ccache-${ARCH}-${BUILD_TYPE}
   artifacts:
     paths:
-      - php-${ARCH}.tar.gz
-      - config.log
-    when: always
-    expire_in: 5 days
+      - php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz
+    when: on_success
+    expire_in: 2 hours
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"
+
+publish:s3:
+  needs:
+    - versions
+    - build:arm:fpm:7.3
+    - build:amd:fpm:7.3
+    - build:arm:fpm:7.2
+    - build:amd:fpm:7.2
+  image: python:latest
+  before_script:
+    - pip install awscli
+    - pip install awscli-plugin-endpoint
+    - mkdir -p ~/.aws
+    - cat $S3_CONFGIG > ~/.aws/config
+  script:
+    -  aws s3 mv . s3://jitesoft.bin/musl/php/aarch64 --recursive --exclude "*" --include="php-aarch64-*"
+    -  aws s3 mv . s3://jitesoft.bin/musl/php/x86_64 --recursive --exclude "*" --include="php-x86_64-*"
+    -  aws s3 mv versions.txt s3://jitesoft.bin/musl/php
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "src"
 
 #region FPM
 
@@ -213,27 +265,29 @@ build:amd:fpm:7.2:
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "container"
 
 containerize:fpm:7.3:
   extends: .containerize:fpm
   needs:
+    - download
     - versions
-    - build:arm:fpm:7.3
-    - build:amd:fpm:7.3
   variables:
     PHP_VERSION: "7.3"
-    V_REGEX: '7\.3'
     TAGS: ",latest,stable"
 
 containerize:fpm:7.2:
   extends: .containerize:fpm
   needs:
+    - download
     - versions
-    - build:arm:fpm:7.2
-    - build:amd:fpm:7.2
   variables:
     PHP_VERSION: "7.2"
-    V_REGEX: '7\.2'
     TAGS: ""
 
 #endregion
@@ -313,35 +367,50 @@ build:amd:cli:7.2:
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "container"
 
 containerize:cli:7.3:
   extends: .containerize:cli
   needs:
+    - download
     - versions
     - build:arm:cli:7.3
     - build:amd:cli:7.3
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
-    V_REGEX: '7\.3'
 
 containerize:cli:7.2:
   needs:
+    - download
     - versions
     - build:arm:cli:7.2
     - build:amd:cli:7.2
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.2"
-    V_REGEX: '7\.2'
     TAGS: ""
 
 #endregion
 
+.scan:base:
+  extends: .container_scanning
+  only:
+    refs:
+      - web
+      - schedules
+    variables:
+      - $BUILD == "container"
+
 scan:fpm:7.2:
   needs:
     - containerize:fpm:7.2
-  extends: .container_scanning
+  extends: .scan:base
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2"
     GIT_STRATEGY: none
@@ -349,7 +418,7 @@ scan:fpm:7.2:
 scan:cli:7.2:
   needs:
     - containerize:cli:7.2
-  extends: .container_scanning
+  extends: .scan:base
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
     GIT_STRATEGY: none
@@ -357,7 +426,7 @@ scan:cli:7.2:
 scan:fpm:7.3:
   needs:
     - containerize:fpm:7.3
-  extends: .container_scanning
+  extends: .scan:base
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3"
     GIT_STRATEGY: none
@@ -365,7 +434,7 @@ scan:fpm:7.3:
 scan:cli:7.3:
   needs:
     - containerize:cli:7.3
-  extends: .container_scanning
+  extends: .scan:base
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
     GIT_STRATEGY: none
