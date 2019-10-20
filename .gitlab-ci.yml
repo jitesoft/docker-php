@@ -142,8 +142,8 @@ gpg:verify:
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   after_script:
     - ccache -s
-    - if [ ! -f src/config.log ]; then touch src/config.log; fi
-    - mv src/config.log .
+    - rm -f /usr/local/bin/phpdbg
+    - cp scripts/* /usr/local/bin/
     - $(cd /usr/local && tar -czf /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz *)
     - mv /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz .
   cache:
@@ -177,8 +177,8 @@ publish:s3:
     - mkdir -p ~/.aws
     - cat $S3_CONFGIG > ~/.aws/config
   script:
-    -  aws s3 mv . s3://jitesoft.bin/musl/php/aarch64 --recursive --exclude "*" --include="php-aarch64-*"
-    -  aws s3 mv . s3://jitesoft.bin/musl/php/x86_64 --recursive --exclude "*" --include="php-x86_64-*"
+    -  aws s3 mv . s3://jitesoft.bin/musl/php/aarch64 --recursive --exclude "*" --include="php-arm64-*"
+    -  aws s3 mv . s3://jitesoft.bin/musl/php/x86_64 --recursive --exclude "*" --include="php-amd64-*"
     -  aws s3 mv versions.txt s3://jitesoft.bin/musl/php
   only:
     refs:
