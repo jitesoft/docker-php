@@ -163,6 +163,8 @@ gpg:verify:
 
 publish:s3:
   stage: publish
+  variables:
+    GIT_STRATEGY: none
   needs:
     - versions
     - build:arm:fpm:7.3
@@ -174,11 +176,10 @@ publish:s3:
     - pip install awscli
     - pip install awscli-plugin-endpoint
     - mkdir -p ~/.aws
-    - cat $S3_CONFGIG > ~/.aws/config
+    - echo $S3_CONFGIG > ~/.aws/config
+    - chmod 777 ~/.aws/config
   script:
-    -  aws s3 mv . s3://jitesoft.bin/musl/php/aarch64 --recursive --exclude "*" --include="php-arm64-*"
-    -  aws s3 mv . s3://jitesoft.bin/musl/php/x86_64 --recursive --exclude "*" --include="php-amd64-*"
-    -  aws s3 mv versions.txt s3://jitesoft.bin/musl/php
+    -  aws s3 mv . s3://jitesoft.bin/musl/php --recursive
   only:
     refs:
       - web
@@ -276,9 +277,6 @@ build:amd:fpm:7.2:
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
-    refs:
-      - web
-      - schedules
     variables:
       - $BUILD == "container"
 
@@ -381,9 +379,6 @@ build:amd:cli:7.2:
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
-    refs:
-      - web
-      - schedules
     variables:
       - $BUILD == "container"
 
@@ -404,9 +399,6 @@ containerize:cli:7.2:
 .scan:base:
   extends: .container_scanning
   only:
-    refs:
-      - web
-      - schedules
     variables:
       - $BUILD == "container"
 
@@ -452,3 +444,19 @@ scan:cli:7.3:
     - "curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline"
   variables:
     GIT_STRATEGY: none
+  only:
+    variables:
+      - $BUILD == "container"
+
+.trigger_container_build:
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  stage: notify
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=${CONTAINER_TRIGGER_TOKEN} -F 'variables[BUILD]=container' -F ref=master https://gitlab.com/api/v4/projects/12918787/trigger/pipeline"
+  variables:
+    GIT_STRATEGY: none
+  only:
+    variables:
+      - $BUILD == "container"
