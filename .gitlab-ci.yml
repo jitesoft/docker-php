@@ -148,7 +148,7 @@ gpg:verify:
   cache:
     paths:
       - ccache
-    key: php.build.ccache-${ARCH}-${BUILD_TYPE}
+    key: php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}
   artifacts:
     paths:
       - php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz
