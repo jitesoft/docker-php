@@ -6,6 +6,7 @@ stages:
   - prebuild
   - verify
   - build
+  - publish
   - containerize
   - scan
   - notify
@@ -66,7 +67,7 @@ gpg:import:
       - web
       - schedules
     variables:
-      - $BUILD == "src"'
+      - $BUILD == "src"
 
 download:
   stage: prebuild
@@ -162,6 +163,7 @@ gpg:verify:
       - $BUILD == "src"
 
 publish:s3:
+  stage: publish
   needs:
     - versions
     - build:arm:fpm:7.3
