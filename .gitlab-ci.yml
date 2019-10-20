@@ -132,8 +132,6 @@ gpg:verify:
     - apk add --no-cache ccache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
     - export PATH="/usr/lib/ccache/bin:$PATH"
-    - CCACHE_RECACHE="yes"
-    - export CCACHE_DIR="$(pwd)/ccache"
     - ccache -s
     - export CPPFLAGS="${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
@@ -271,10 +269,11 @@ build:amd:fpm:7.2:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
+    - wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/versions.txt
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-fpm --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
     refs:
@@ -285,18 +284,12 @@ build:amd:fpm:7.2:
 
 containerize:fpm:7.3:
   extends: .containerize:fpm
-  needs:
-    - download
-    - versions
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
 
 containerize:fpm:7.2:
   extends: .containerize:fpm
-  needs:
-    - download
-    - versions
   variables:
     PHP_VERSION: "7.2"
     TAGS: ""
@@ -381,10 +374,11 @@ build:amd:cli:7.2:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
+    - wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/versions.txt
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --cache-from=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --cache-to=${CI_REGISTRY_IMAGE}/cache:${PHP_VERSION}-cli --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
     refs:
@@ -395,21 +389,11 @@ build:amd:cli:7.2:
 
 containerize:cli:7.3:
   extends: .containerize:cli
-  needs:
-    - download
-    - versions
-    - build:arm:cli:7.3
-    - build:amd:cli:7.3
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
 
 containerize:cli:7.2:
-  needs:
-    - download
-    - versions
-    - build:arm:cli:7.2
-    - build:amd:cli:7.2
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.2"

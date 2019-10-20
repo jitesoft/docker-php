@@ -19,12 +19,17 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
-COPY ./scripts/* /usr/local/bin/
-COPY ./php-${TARGETARCH}.tar.gz /tmp/php.tar.gz
+ARG PHP_VERSION
+ARG BUILD_TYPE
+ARG TARGETARCH
+ARG PHP_MINOR
 
 RUN apk add --virtual .phpize-deps $PHPIZE_DEPS \
- && mkdir -p /var/www/html /usr/local/etc/php/conf.d \
+ && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
  && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
+ && GNU_ARCH="x86_64" \
+ && if [ "${TARGETARCH}" == "arm64" ]; then GNU_ARCH="aarch64"; fi \
+ && curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/${GNU_ARCH}/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -o /tmp/php.tar.gz \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
  && tar -xzhf /tmp/php.tar.gz -C /usr/local \
  && rm -rf /tmp/php.tar.gz \
@@ -44,15 +49,13 @@ RUN apk add --virtual .phpize-deps $PHPIZE_DEPS \
  && rm -rf /tmp/pear ~/.pearrc \
  && cd /usr/local/etc \
  && if [ "${BUILD_TYPE}" == "fpm" ]; then \
-      echo "Is FPM build."; \
       sed 's!=NONE/!=!g' php-fpm.conf.default | tee php-fpm.conf > /dev/null; \
       cp php-fpm.d/www.conf.default php-fpm.d/www.conf; \
       echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
    fi \
- # To make sure that all scripts are possible to run even if file is commited with invalid access rights.
  && chmod -R +x /usr/local/bin \
- # Sanity check...
+ && apk del .phpize-deps \
  && php -version
 
 STOPSIGNAL SIGQUIT
