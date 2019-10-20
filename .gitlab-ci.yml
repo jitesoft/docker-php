@@ -233,7 +233,6 @@ build:arm:fpm:7.3:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
     BUILD_TYPE: fpm
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
@@ -244,7 +243,6 @@ build:amd:fpm:7.3:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.3"
     ARCH: "amd64"
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 build:arm:fpm:7.2:
@@ -253,7 +251,6 @@ build:arm:fpm:7.2:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "arm64"
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
@@ -264,7 +261,6 @@ build:amd:fpm:7.2:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "amd64"
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 .containerize:fpm:
@@ -335,7 +331,6 @@ build:arm:cli:7.3:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
     BUILD_TYPE: cli
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
@@ -346,7 +341,6 @@ build:amd:cli:7.3:
     PHP_VERSION: "7.3"
     ARCH: "amd64"
     BUILD_TYPE: cli
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 build:arm:cli:7.2:
@@ -355,7 +349,6 @@ build:arm:cli:7.2:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
     BUILD_TYPE: cli
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
@@ -366,7 +359,6 @@ build:amd:cli:7.2:
     PHP_VERSION: "7.2"
     ARCH: "amd64"
     BUILD_TYPE: cli
-    CCACHE_RECACHE: "yes"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 .containerize:cli:
