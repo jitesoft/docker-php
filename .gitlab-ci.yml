@@ -274,7 +274,7 @@ build:amd:fpm:7.2:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm-test" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
     variables:
