@@ -27,9 +27,7 @@ ARG PHP_MINOR
 RUN apk add --virtual .phpize-deps $PHPIZE_DEPS \
  && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
  && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
- && GNU_ARCH="x86_64" \
- && if [ "${TARGETARCH}" == "arm64" ]; then GNU_ARCH="aarch64"; fi \
- && curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/${GNU_ARCH}/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -o /tmp/php.tar.gz \
+ && curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -o /tmp/php.tar.gz \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
  && tar -xzhf /tmp/php.tar.gz -C /usr/local \
  && rm -rf /tmp/php.tar.gz \
