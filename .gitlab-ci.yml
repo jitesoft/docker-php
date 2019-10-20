@@ -148,7 +148,7 @@ gpg:verify:
   cache:
     paths:
       - ccache
-    key: php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}
+    key: "php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}"
   artifacts:
     paths:
       - php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz
@@ -173,11 +173,11 @@ publish:s3:
     - build:amd:fpm:7.2
   image: python:latest
   before_script:
-    - pip install awscli
-    - pip install awscli-plugin-endpoint
+    - pip install awscli awscli-plugin-endpoint
     - mkdir -p ~/.aws
-    - echo $S3_CONFGIG > ~/.aws/config
-    - chmod 777 ~/.aws/config
+    - cat $S3_CONFIG
+    - cat $S3_CONFGIG > ~/.aws/config
+    - cat $S3_CREDENTIALS > ~/.aws/credentials
   script:
     - sha256sum * > sha256sum.txt
     - aws s3 mv . s3://jitesoft.bin/musl/php --recursive
