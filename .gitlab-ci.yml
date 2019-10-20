@@ -132,10 +132,11 @@ gpg:verify:
     - apk add --no-cache ccache gnupg argon2-dev coreutils curl-dev libedit-dev libsodium-dev bison libxml2-dev openssl-dev sqlite-dev ca-certificates curl tar openssl xz  autoconf dpkg-dev dpkg file g++ gcc libc-dev make re2c
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
     - export PATH="/usr/lib/ccache/bin:$PATH"
+    - CCACHE_RECACHE="yes"
     - export CCACHE_DIR="$(pwd)/ccache"
     - ccache -s
-    - export PHP_CPPFLAGS="-fstack-protector-strong -fpic -fpie -O2"
-    - export PHP_CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
+    - export CPPFLAGS="${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
+    - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
@@ -232,6 +233,8 @@ build:arm:fpm:7.3:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
     BUILD_TYPE: fpm
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
 
@@ -241,6 +244,8 @@ build:amd:fpm:7.3:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.3"
     ARCH: "amd64"
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 build:arm:fpm:7.2:
   extends: .build:fpm
@@ -248,6 +253,8 @@ build:arm:fpm:7.2:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "arm64"
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
 
@@ -257,6 +264,8 @@ build:amd:fpm:7.2:
     BUILD_TYPE: fpm
     PHP_VERSION: "7.2"
     ARCH: "amd64"
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 .containerize:fpm:
   stage: containerize
@@ -334,6 +343,8 @@ build:arm:cli:7.3:
     PHP_VERSION: "7.3"
     ARCH: "arm64"
     BUILD_TYPE: cli
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
 
@@ -343,6 +354,8 @@ build:amd:cli:7.3:
     PHP_VERSION: "7.3"
     ARCH: "amd64"
     BUILD_TYPE: cli
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 build:arm:cli:7.2:
   extends: .build:cli
@@ -350,6 +363,8 @@ build:arm:cli:7.2:
     PHP_VERSION: "7.2"
     ARCH: "arm64"
     BUILD_TYPE: cli
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - aarch64-native
 
@@ -359,6 +374,8 @@ build:amd:cli:7.2:
     PHP_VERSION: "7.2"
     ARCH: "amd64"
     BUILD_TYPE: cli
+    CCACHE_RECACHE: "yes"
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 .containerize:cli:
   stage: containerize
