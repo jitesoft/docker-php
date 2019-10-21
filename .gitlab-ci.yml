@@ -262,6 +262,7 @@ build:amd:fpm:7.2:
     ARCH: "amd64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
+# todo: Re-add quai.
 .containerize:fpm:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
@@ -270,7 +271,8 @@ build:amd:fpm:7.2:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm-test" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+    - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION}-fpm,${PHP_VERSION}-fpm${HUB_TAGS}")
+    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
     variables:
@@ -281,12 +283,14 @@ containerize:fpm:7.3:
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
+    HUB_TAGS: ",latest-fpm,stable-fpm"
 
 containerize:fpm:7.2:
   extends: .containerize:fpm
   variables:
     PHP_VERSION: "7.2"
     TAGS: ""
+    HUB_TAGS: ""
 
 #endregion
 
@@ -360,6 +364,7 @@ build:amd:cli:7.2:
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
+# todo: Re-add quai.
 .containerize:cli:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
@@ -368,7 +373,8 @@ build:amd:cli:7.2:
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli-test" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
+    - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION},${FULL_VERSION}-cli,${PHP_VERSION},${PHP_VERSION}-cli${HUB_TAGS}")
+    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
   only:
     variables:
@@ -379,12 +385,14 @@ containerize:cli:7.3:
   variables:
     PHP_VERSION: "7.3"
     TAGS: ",latest,stable"
+    HUB_TAGS: ",latest,stable,latest-cli,stable-cli"
 
 containerize:cli:7.2:
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.2"
     TAGS: ""
+    HUB_TAGS: ""
 
 #endregion
 

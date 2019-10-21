@@ -43,7 +43,6 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
     * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
     * `7.2-cli`, `7.2`
 
-
 ## Image labels
 
 This image follows the [Jitesoft image label specification 1.0.0](https://gitlab.com/snippets/1866155).
