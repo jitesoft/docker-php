@@ -175,8 +175,7 @@ publish:s3:
   before_script:
     - pip install awscli awscli-plugin-endpoint
     - mkdir -p ~/.aws
-    - cat $S3_CONFIG
-    - cat $S3_CONFGIG > ~/.aws/config
+    - cat $S3_CONFIG > ~/.aws/config
     - cat $S3_CREDENTIALS > ~/.aws/credentials
   script:
     - sha256sum * > sha256sum.txt
