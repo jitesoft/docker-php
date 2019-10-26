@@ -24,13 +24,12 @@ ARG BUILD_TYPE
 ARG TARGETARCH
 ARG PHP_MINOR
 
-RUN apk add --virtual .phpize-deps $PHPIZE_DEPS \
+RUN --mount=type=bind,source=./binaries,target=/tmp \
+    apk add --virtual .phpize-deps $PHPIZE_DEPS \
  && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
  && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
- && curl -L https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -o /tmp/php.tar.gz \
+ && tar -xzhf /tmp/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
- && tar -xzhf /tmp/php.tar.gz -C /usr/local \
- && rm -rf /tmp/php.tar.gz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
  && addgroup -g 82 -S www-data \
  && adduser -u 82 -D -S -G www-data www-data \
