@@ -25,11 +25,11 @@ ARG BUILD_TYPE
 ARG TARGETARCH
 ARG PHP_MINOR
 
-RUN --mount=type=bind,source=./binaries,target=/tmp \
+RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
     apk add --virtual .phpize-deps $PHPIZE_DEPS \
  && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
  && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
- && tar -xzhf /tmp/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -C /usr/local \
+ && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${PHP_MINOR}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
  && addgroup -g 82 -S www-data \
