@@ -30,12 +30,6 @@ versions:
     expire_in: 3 hours
   tags:
     - jitesoft
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
 
 gpg:import:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -62,12 +56,6 @@ gpg:import:
     expire_in: 3 hours
   tags:
     - jitesoft
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
 
 download:
   stage: prebuild
@@ -92,12 +80,6 @@ download:
     expire_in: 1 day
   tags:
     - jitesoft
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
 
 gpg:verify:
   variables:
@@ -114,12 +96,6 @@ gpg:verify:
     - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
   tags:
     - jitesoft
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
 
 .cross:build:shared: &shared
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -154,38 +130,6 @@ gpg:verify:
       - php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz
     when: on_success
     expire_in: 2 hours
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
-
-publish:s3:
-  stage: publish
-  variables:
-    GIT_STRATEGY: none
-  needs:
-    - versions
-    - build:arm:fpm:7.3
-    - build:amd:fpm:7.3
-    - build:arm:fpm:7.2
-    - build:amd:fpm:7.2
-  image: python:latest
-  before_script:
-    - pip install awscli awscli-plugin-endpoint
-    - mkdir -p ~/.aws
-    - cat $S3_CONFIG > ~/.aws/config
-    - cat $S3_CREDENTIALS > ~/.aws/credentials
-  script:
-    - sha256sum * > sha256sum.txt
-    - aws s3 mv . s3://jitesoft.bin/musl/php --recursive --acl public-read
-  only:
-    refs:
-      - web
-      - schedules
-    variables:
-      - $BUILD == "src"
 
 #region FPM
 
@@ -264,19 +208,24 @@ build:amd:fpm:7.2:
 
 # todo: Re-add quai.
 .containerize:fpm:
+  needs:
+    - build:arm:fpm:7.2
+    - build:arm:fpm:7.3
+    - build:amd:fpm:7.2
+    - build:amd:fpm:7.3
+    - versions
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/versions.txt
+    - mkdir binaries
+    - mv *.tar.gz binaries/
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION}-fpm,${PHP_VERSION}-fpm${HUB_TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
-  only:
-    variables:
-      - $BUILD == "container"
+
 
 containerize:fpm:7.3:
   extends: .containerize:fpm
@@ -366,19 +315,23 @@ build:amd:cli:7.2:
 
 # todo: Re-add quai.
 .containerize:cli:
+  needs:
+    - build:arm:cli:7.2
+    - build:arm:cli:7.3
+    - build:amd:cli:7.2
+    - build:amd:cli:7.3
+    - versions
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - wget https://s3.nl-ams.scw.cloud/jitesoft.bin/musl/php/versions.txt
+    - mkdir binaries
+    - mv *.tar.gz binaries/
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION},${FULL_VERSION}-cli,${PHP_VERSION},${PHP_VERSION}-cli${HUB_TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
   tags: [ jitesoft, buildx, amd64, arm64 ]
-  only:
-    variables:
-      - $BUILD == "container"
 
 containerize:cli:7.3:
   extends: .containerize:cli
@@ -398,9 +351,6 @@ containerize:cli:7.2:
 
 .scan:base:
   extends: .container_scanning
-  only:
-    variables:
-      - $BUILD == "container"
 
 scan:fpm:7.2:
   needs:
@@ -444,9 +394,6 @@ trigger_build:
     - "curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline"
   variables:
     GIT_STRATEGY: none
-  only:
-    variables:
-      - $BUILD == "container"
 
 trigger_container_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -457,6 +404,4 @@ trigger_container_build:
     - curl -X POST -F token=${CONTAINER_TRIGGER_TOKEN} -F "variables[BUILD]=container" -F ref=master https://gitlab.com/api/v4/projects/12918787/trigger/pipeline
   variables:
     GIT_STRATEGY: none
-  only:
-    variables:
-      - $BUILD == "src"
+
