@@ -224,7 +224,7 @@ build:amd:fpm:7.2:
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION}-fpm,${PHP_VERSION}-fpm${HUB_TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
-  tags: [ jitesoft, buildx, amd64, arm64 ]
+  tags: [ jitesoft, buildx, protected ]
 
 
 containerize:fpm:7.3:
@@ -331,7 +331,7 @@ build:amd:cli:7.2:
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
     - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION},${FULL_VERSION}-cli,${PHP_VERSION},${PHP_VERSION}-cli${HUB_TAGS}")
     - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
-  tags: [ jitesoft, buildx, amd64, arm64 ]
+  tags: [ jitesoft, buildx, protected ]
 
 containerize:cli:7.3:
   extends: .containerize:cli
