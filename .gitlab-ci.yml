@@ -178,7 +178,7 @@ build:arm:fpm:7.3:
     BUILD_TYPE: fpm
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
-    - aarch64-native
+    - native-aarch64
 
 build:amd:fpm:7.3:
   extends: .build:fpm
@@ -196,7 +196,7 @@ build:arm:fpm:7.2:
     ARCH: "arm64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
-    - aarch64-native
+    - native-aarch64
 
 build:amd:fpm:7.2:
   extends: .build:fpm
@@ -285,7 +285,7 @@ build:arm:cli:7.3:
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
-    - aarch64-native
+    - native-aarch64
 
 build:amd:cli:7.3:
   extends: .build:cli
@@ -303,7 +303,7 @@ build:arm:cli:7.2:
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
-    - aarch64-native
+    - native-aarch64
 
 build:amd:cli:7.2:
   extends: .build:cli
