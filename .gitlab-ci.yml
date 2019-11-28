@@ -16,7 +16,7 @@ versions:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   variables:
     GIT_STRATEGY: none
-    PHP_MINORS: "3 2"
+    PHP_MINORS: "4 3"
   before_script:
     - apk add --no-cache grep
   script:
@@ -153,7 +153,7 @@ gpg:verify:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-sodium=shared \
+        --with-sodium \
         --with-password-argon2 \
         --with-libxml-dir \
         --with-mysqli \
@@ -188,30 +188,30 @@ build:amd:fpm:7.3:
     ARCH: "amd64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
-build:arm:fpm:7.2:
+build:arm:fpm:7.4:
   extends: .build:fpm
   variables:
     BUILD_TYPE: fpm
-    PHP_VERSION: "7.2"
+    PHP_VERSION: "7.4"
     ARCH: "arm64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - native-aarch64
 
-build:amd:fpm:7.2:
+build:amd:fpm:7.4:
   extends: .build:fpm
   variables:
     BUILD_TYPE: fpm
-    PHP_VERSION: "7.2"
+    PHP_VERSION: "7.4"
     ARCH: "amd64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
 # todo: Re-add quai.
 .containerize:fpm:
   needs:
-    - build:arm:fpm:7.2
+    - build:arm:fpm:7.4
     - build:arm:fpm:7.3
-    - build:amd:fpm:7.2
+    - build:amd:fpm:7.4
     - build:amd:fpm:7.3
     - versions
   stage: containerize
@@ -231,16 +231,15 @@ containerize:fpm:7.3:
   extends: .containerize:fpm
   variables:
     PHP_VERSION: "7.3"
-    TAGS: ",latest,stable"
-    HUB_TAGS: ",latest-fpm,stable-fpm"
-
-containerize:fpm:7.2:
-  extends: .containerize:fpm
-  variables:
-    PHP_VERSION: "7.2"
     TAGS: ""
     HUB_TAGS: ""
 
+containerize:fpm:7.4:
+  extends: .containerize:fpm
+  variables:
+    PHP_VERSION: "7.4"
+    TAGS: ",latest,stable"
+    HUB_TAGS: ",latest-fpm,stable-fpm"
 #endregion
 
 #region CLI
@@ -261,7 +260,7 @@ containerize:fpm:7.2:
         --with-mhash \
         --with-pcre-regex \
         --with-openssl \
-        --with-sodium=shared \
+        --with-sodium \
         --with-password-argon2 \
         --with-mysqli \
         --with-zlib \
@@ -295,20 +294,20 @@ build:amd:cli:7.3:
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
 
-build:arm:cli:7.2:
+build:arm:cli:7.4:
   extends: .build:cli
   variables:
-    PHP_VERSION: "7.2"
+    PHP_VERSION: "7.4"
     ARCH: "arm64"
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
   tags:
     - native-aarch64
 
-build:amd:cli:7.2:
+build:amd:cli:7.4:
   extends: .build:cli
   variables:
-    PHP_VERSION: "7.2"
+    PHP_VERSION: "7.4"
     ARCH: "amd64"
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
@@ -316,9 +315,9 @@ build:amd:cli:7.2:
 # todo: Re-add quai.
 .containerize:cli:
   needs:
-    - build:arm:cli:7.2
+    - build:arm:cli:7.4
     - build:arm:cli:7.3
-    - build:amd:cli:7.2
+    - build:amd:cli:7.4
     - build:amd:cli:7.3
     - versions
   stage: containerize
@@ -337,35 +336,34 @@ containerize:cli:7.3:
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.3"
-    TAGS: ",latest,stable"
-    HUB_TAGS: ",latest,stable,latest-cli,stable-cli"
-
-containerize:cli:7.2:
-  extends: .containerize:cli
-  variables:
-    PHP_VERSION: "7.2"
     TAGS: ""
     HUB_TAGS: ""
 
+containerize:cli:7.4:
+  extends: .containerize:cli
+  variables:
+    PHP_VERSION: "7.4"
+    TAGS: ",latest,stable"
+    HUB_TAGS: ",latest,stable,latest-cli,stable-cli"
 #endregion
 
 .scan:base:
   extends: .container_scanning
 
-scan:fpm:7.2:
+scan:fpm:7.4:
   needs:
-    - containerize:fpm:7.2
+    - containerize:fpm:7.4
   extends: .scan:base
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.2"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.4"
     GIT_STRATEGY: none
 
-scan:cli:7.2:
+scan:cli:7.4:
   needs:
-    - containerize:cli:7.2
+    - containerize:cli:7.4
   extends: .scan:base
   variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.2"
+    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.4"
     GIT_STRATEGY: none
 
 scan:fpm:7.3:
