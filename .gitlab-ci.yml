@@ -137,6 +137,8 @@ gpg:verify:
   <<: *shared
   script:
     - cd src
+    - EXTRA="--with-pear"
+    - if [ "${PHP_VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex --with-libxml-dir"; fi
     - |
       ./configure \
         --enable-fpm \
@@ -162,7 +164,8 @@ gpg:verify:
         --enable-calendar \
         --enable-ftp \
         --enable-mbstring \
-        --enable-mysqlnd
+        --enable-mysqlnd \
+        ${EXTRA}
     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
@@ -246,6 +249,8 @@ containerize:fpm:7.4:
   <<: *shared
   script:
     - cd src
+    - EXTRA="--with-pear"
+    - if [ "${PHP_VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex"; fi
     - |
       ./configure \
         --prefix=/usr/local \
@@ -267,7 +272,8 @@ containerize:fpm:7.4:
         --enable-exif \
         --enable-ftp \
         --enable-mbstring \
-        --enable-mysqlnd
+        --enable-mysqlnd \
+        ${EXTRA}
     - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
