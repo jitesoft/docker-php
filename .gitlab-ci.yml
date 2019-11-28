@@ -151,11 +151,9 @@ gpg:verify:
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-mhash \
-        --with-pcre-regex \
         --with-openssl \
         --with-sodium \
         --with-password-argon2 \
-        --with-libxml-dir \
         --with-mysqli \
         --with-zlib \
         --with-zlib-dir \
@@ -258,7 +256,6 @@ containerize:fpm:7.4:
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-mhash \
-        --with-pcre-regex \
         --with-openssl \
         --with-sodium \
         --with-password-argon2 \
