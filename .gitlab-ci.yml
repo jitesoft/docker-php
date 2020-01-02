@@ -188,6 +188,8 @@ build:amd:fpm:7.3:
     PHP_VERSION: "7.3"
     ARCH: "amd64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+  tags:
+    - native-amd64
 
 build:arm:fpm:7.4:
   extends: .build:fpm
@@ -206,6 +208,8 @@ build:amd:fpm:7.4:
     PHP_VERSION: "7.4"
     ARCH: "amd64"
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+  tags:
+    - native-amd64
 
 # todo: Re-add quai.
 .containerize:fpm:
