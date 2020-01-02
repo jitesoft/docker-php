@@ -223,8 +223,6 @@ build:amd:fpm:7.4:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - mkdir binaries
-    - mv *.tar.gz binaries/
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
