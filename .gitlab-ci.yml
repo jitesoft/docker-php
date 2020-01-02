@@ -120,14 +120,15 @@ gpg:verify:
     - rm -f /usr/local/bin/phpdbg
     - cp scripts/* /usr/local/bin/
     - $(cd /usr/local && tar -czf /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz *)
-    - mv /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz .
+    - mkdir binaries
+    - mv /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz /binaries
   cache:
     paths:
       - ccache
     key: "php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}"
   artifacts:
     paths:
-      - php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz
+      - binaries
     when: on_success
     expire_in: 2 hours
 
@@ -321,7 +322,7 @@ build:amd:cli:7.4:
 
 # todo: Re-add quai.
 .containerize:cli:
-  needs:
+  dependencies:
     - build:arm:cli:7.4
     - build:arm:cli:7.3
     - build:amd:cli:7.4
@@ -330,8 +331,6 @@ build:amd:cli:7.4:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - mkdir binaries
-    - mv *.tar.gz binaries/
     - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
     - printf 'CMD ["php", "-a"]' >> Dockerfile
     - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
