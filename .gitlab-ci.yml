@@ -128,7 +128,7 @@ gpg:verify:
     key: "php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}"
   artifacts:
     paths:
-      - binaries/
+      - binaries/*.tar.gz
     when: on_success
     expire_in: 2 hours
 
