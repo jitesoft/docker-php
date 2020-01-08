@@ -158,6 +158,8 @@ gpg:verify:
         --with-sodium \
         --with-password-argon2 \
         --with-mysqli \
+        --with-pdo-mysql \
+        --with-mysql \
         --with-zlib \
         --with-zlib-dir \
         --with-curl \
@@ -268,6 +270,8 @@ containerize:fpm:7.4:
         --with-sodium \
         --with-password-argon2 \
         --with-mysqli \
+        --with-pdo-mysql \
+        --with-mysql \
         --with-zlib \
         --with-curl \
         --with-libedit \
