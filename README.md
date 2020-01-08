@@ -21,27 +21,27 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
 ### DockerHub
 
 * `jitesoft/php`
-    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-    * `7.2-fpm`
-    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-    * `7.2-cli`, `7.2`
+    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.3-fpm`
+    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
+    * `7.3-cli`, `7.3`
 
 ### GitLab
 
 * `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
-    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-    * `7.2-fpm`
+    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.3-fpm`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
-    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-    * `7.2-cli`, `7.2`
+    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
+    * `7.3-cli`, `7.3`
 
 ### Quay.io
 
 * `quay.io/jitesoft/php`
-    * `fpm`, `7.3-fpm`, `latest-fpm`, `stable-fpm`
-    * `7.2-fpm`
-    * `cli`, `latest-cli` `7.3-cli`, `stable-cli`, `7.3`, `stable`, `latest`
-    * `7.2-cli`, `7.2`
+    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.3-fpm`
+    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
+    * `7.3-cli`, `7.3`
 
 ## Image labels
 
