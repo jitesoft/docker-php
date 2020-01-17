@@ -301,6 +301,8 @@ build:amd:cli:7.3:
     ARCH: "amd64"
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+  tags:
+    - native-amd64
 
 build:arm:cli:7.4:
   extends: .build:cli
@@ -319,6 +321,8 @@ build:amd:cli:7.4:
     ARCH: "amd64"
     BUILD_TYPE: cli
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+  tags:
+    - native-amd64
 
 # todo: Re-add quai.
 .containerize:cli:
