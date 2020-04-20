@@ -1,0 +1,9 @@
+#!/bin/sh
+# Simple health check script for fpm using cgi-fcgi to ping the service.
+# shellcheck disable=SC2034
+HEALTH_CHECK_ENDPOINT=${HEALTH_CHECK_ENDPOINT:-"/ping"}
+
+SCRIPT_NAME=${HEALTH_CHECK_ENDPOINT}
+SCRIPT_FILENAME=${HEALTH_CHECK_ENDPOINT}
+REQUEST_METHOD=${HEALTH_CHECK_ENDPOINT}
+/usr/bin/cgi-fcgi -bind -connect localhost:9000 || exit 1
