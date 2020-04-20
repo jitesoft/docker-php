@@ -51,6 +51,7 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
       cp php-fpm.d/www.conf.default php-fpm.d/www.conf; \
       echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
+      apk add --no-cache fcgi; \
    fi \
  && chmod -R +x /usr/local/bin \
  && apk del .phpize-deps \
