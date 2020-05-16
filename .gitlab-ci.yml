@@ -391,3 +391,14 @@ scan:cli:7.3:
   variables:
     SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
     GIT_STRATEGY: none
+
+trigger_build:
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  stage: notify
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline"
+    - "curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline"
+  variables:
+    GIT_STRATEGY: none
