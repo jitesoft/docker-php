@@ -215,12 +215,6 @@ build:amd:fpm:7.4:
 
 # todo: Re-add quai.
 .containerize:fpm:
-  needs:
-    - build:arm:fpm:7.4
-    - build:arm:fpm:7.3
-    - build:amd:fpm:7.4
-    - build:amd:fpm:7.3
-    - versions
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
@@ -233,6 +227,10 @@ build:amd:fpm:7.4:
 
 
 containerize:fpm:7.3:
+  needs:
+    - versions
+    - build:arm:fpm:7.3
+    - build:amd:fpm:7.3
   extends: .containerize:fpm
   variables:
     PHP_VERSION: "7.3"
@@ -240,6 +238,10 @@ containerize:fpm:7.3:
     HUB_TAGS: ""
 
 containerize:fpm:7.4:
+  needs:
+    - build:arm:fpm:7.4
+    - build:amd:fpm:7.4
+    - versions
   extends: .containerize:fpm
   variables:
     PHP_VERSION: "7.4"
@@ -326,12 +328,6 @@ build:amd:cli:7.4:
 
 # todo: Re-add quai.
 .containerize:cli:
-  needs:
-    - build:arm:cli:7.4
-    - build:arm:cli:7.3
-    - build:amd:cli:7.4
-    - build:amd:cli:7.3
-    - versions
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
@@ -343,6 +339,10 @@ build:amd:cli:7.4:
   tags: [ jitesoft, buildx, protected ]
 
 containerize:cli:7.3:
+  needs:
+    - build:arm:cli:7.3
+    - build:amd:cli:7.3
+    - versions
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.3"
@@ -350,6 +350,10 @@ containerize:cli:7.3:
     HUB_TAGS: ""
 
 containerize:cli:7.4:
+  needs:
+    - build:arm:cli:7.4
+    - build:amd:cli:7.4
+    - versions
   extends: .containerize:cli
   variables:
     PHP_VERSION: "7.4"
