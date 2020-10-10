@@ -195,6 +195,7 @@ gpg:verify:
     - gpg --verify php.tar.xz.asc php.tar.xz
 
 .build:
+  stage: build
   rules:
     - if: "$BUILD"
       when: always
