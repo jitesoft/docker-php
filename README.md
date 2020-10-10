@@ -21,25 +21,31 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
 ### DockerHub
 
 * `jitesoft/php`
+    * `8.0-fpm`, `rc-fpm`, `unstable-fpm`
     * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
     * `7.3-fpm`
+    * `8.0`, `8.0-cli`, `rc`, `rc-cli`, `unstable`, `unstable-cli`
     * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
     * `7.3-cli`, `7.3`
 
 ### GitLab
 
 * `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
-    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
-    * `7.3-fpm`
+    * `8.0`, `rc`, `unstable`
+    * `7.4`, `latest`, `stable`
+    * `7.3`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
-    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
-    * `7.3-cli`, `7.3`
+    * `8.0-fpm`, `rc-fpm`, `unstable-fpm`
+    * `latest` `7.4`, `stable`, `7.4`, `stable`, `latest`
+    * `7.3`, `7.3`
 
 ### GitHub
 
 * `ghcr.io/jitesoft/php`
+    * `8.0-fpm`, `rc-fpm`, `unstable-fpm`
     * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
     * `7.3-fpm`
+    * `8.0`, `8.0-cli`, `rc`, `rc-cli`, `unstable`, `unstable-cli`
     * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
     * `7.3-cli`, `7.3`
 
