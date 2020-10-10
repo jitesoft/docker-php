@@ -355,5 +355,5 @@ containerize:cli:
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php rc,unstable) $(helper jitesoft/php,ghcr.io/jitesoft/php rc-cli,unstable-cli)"
       fi
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY}${VERSION}-cli,${PHP_KEY}-cli)"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
     - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
