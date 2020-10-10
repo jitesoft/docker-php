@@ -171,6 +171,7 @@ download:
   stage: pre
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
+    - echo "Downloading ${VERSION}"
     - curl -sSL "${DOWNLOAD_URL}" -o php.tar.xz;
     - curl -sSL "$(echo $DOWNLOAD_URL | sed 's/tar.xz/tar.xz.asc/g')" -o php.tar.xz.asc;
   artifacts:
@@ -218,11 +219,12 @@ gpg:verify:
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
   script:
+    - echo "Building ${VERSION}"
     - cd src
     - EXTRA="--with-pear"
     # If the php version is 7.3 or lower, it requires pcre and libxml flags.
     # And if its 7.4 or above, the --with-pear flag is required to include pear.
-    - if [ "${PHP_VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex --with-libxml-dir"; fi
+    - if [ "${VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex --with-libxml-dir"; fi
     - |
       ./configure ${TYPE_FLAGS} \
         --prefix=/usr/local \
@@ -309,7 +311,7 @@ build:fpm:amd:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - docker buildx build --platform linux/amd64,linux/arm64 --progress-plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg BUILD_TYPE="${BUILD_TYPE}" .
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress-plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${BUILD_TYPE}" .
   tags: [ jitesoft, buildx, protected ]
 
 containerize:fpm:
@@ -330,8 +332,8 @@ containerize:fpm:
       else if [ "${PHP_KEY}" == "${RC}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm rc,unstable) $(helper ghcr.io/jitesoft/php,jitesoft/php rc-fpm,unstable-fpm)"
       fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${PHP_VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${PHP_VERSION}-fpm,${PHP_KEY}-fpm)"
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${VERSION},${PHP_KEY})"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION}-fpm,${PHP_KEY}-fpm)"
     - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
 
 containerize:cli:
@@ -351,6 +353,6 @@ containerize:cli:
       else if [ "${PHP_KEY}" == "${RC}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php rc,unstable) $(helper jitesoft/php,ghcr.io/jitesoft/php rc-cli,unstable-cli)"
       fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${PHP_VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${PHP_VERSION},${PHP_KEY}${PHP_VERSION}-cli,${PHP_KEY}-cli)"
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY}${VERSION}-cli,${PHP_KEY}-cli)"
     - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
