@@ -26,8 +26,8 @@ check:
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - touch versions.txt
-    - PHP_73_VERSION=(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
-    - PHP_74_VERSION=(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
+    - PHP_73_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
+    - PHP_74_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
     - PHP_80_VERSION=$(wget -qO- https://downloads.php.net/~carusogabriel | grep -oP "(?<=>php-)([8]\.[0]\.\d\w+)" | sort -V | tail -n1)
     - |
       if [ "$(cat version73.txt)" != "${PHP_73_VERSION}" ]; then
