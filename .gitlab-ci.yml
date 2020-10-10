@@ -330,8 +330,7 @@ containerize:fpm:
       INCLUDE_TAGS=""
       if [ "${PHP_KEY}" == "${LATEST}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm latest,stable) $(helper ghcr.io/jitesoft/php,jitesoft/php latest-fpm,stable-fpm)"
-      fi
-      if [ "${PHP_KEY}" == "${RC}" ]; then
+      elif [ "${PHP_KEY}" == "${RC}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm rc,unstable) $(helper ghcr.io/jitesoft/php,jitesoft/php rc-fpm,unstable-fpm)"
       fi
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${VERSION},${PHP_KEY})"
@@ -352,8 +351,7 @@ containerize:cli:
       INCLUDE_TAGS=""
       if [ "${PHP_KEY}" == "${LATEST}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
-      fi
-      if [ "${PHP_KEY}" == "${RC}" ]; then
+      elif [ "${PHP_KEY}" == "${RC}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php rc,unstable) $(helper jitesoft/php,ghcr.io/jitesoft/php rc-cli,unstable-cli)"
       fi
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
