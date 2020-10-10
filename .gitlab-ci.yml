@@ -196,8 +196,6 @@ gpg:verify:
     - gpg --verify php.tar.xz.asc php.tar.xz
 
 .build:
-  tags:
-    - "native-${ARCH}"
   stage: build
   rules:
     - if: "$BUILD"
@@ -271,19 +269,37 @@ gpg:verify:
     when: on_success
     expire_in: 1 day
 
-build:cli:
+build:cli:arm:
+  tags: [ native-arm64 ]
   extends: .build
-  parallel:
-    matrix:
-      - { ARCH: "arm64", TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli" }
-      - { ARCH: "amd64", TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli" }
+  variables:
+    ARCH: arm64
+    TYPE_FLAGS: "--with-mhash"
+    BUILD_TYPE: cli
 
-build:fpm:
+build:cli:amd:
+  tags: [ native-amd64 ]
   extends: .build
-  parallel:
-    matrix:
-      - { ARCH: "arm64", TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
-      - { ARCH: "amd64", TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
+  variables:
+    ARCH: amd64
+    TYPE_FLAGS: "--with-mhash"
+    BUILD_TYPE: cli
+
+build:fpm:arm:
+  tags: [ native-arm64 ]
+  extends: .build
+  variables:
+    ARCH: arm64
+    TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
+    BUILD_TYPE: cli
+
+build:fpm:amd:
+  tags: [ native-amd64 ]
+  extends: .build
+  variables:
+    ARCH: amd64
+    TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
+    BUILD_TYPE: cli
 
 .containerize:
   rules:
@@ -299,7 +315,9 @@ build:fpm:
 containerize:fpm:
   extends: .containerize
   needs:
-    - job: build:fpm
+    - job: build:fpm:amd
+      artifacts: true
+    - job: build:fpm:arm
       artifacts: true
   variables:
     PHP_TYPE: "fpm"
@@ -319,7 +337,9 @@ containerize:fpm:
 containerize:cli:
   extends: .containerize
   needs:
-    - job: build:cli
+    - job: build:cli:amd
+      artifacts: true
+    - job: build:cli:arm
       artifacts: true
   variables:
     PHP_TYPE: "cli"
