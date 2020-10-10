@@ -30,11 +30,8 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
  && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}.tar.gz -C /usr/local \
- && if [ "$PHP_MINOR" == "8.0" ]; then \
-      curl -L https://downloads.php.net/~carusogabriel/php-${PHP_VERSION}.tar.xz -o /usr/src/php.tar.xz \
-    else \
-       curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
-    fi \
+ && if [ "$PHP_MINOR" == "8.0" ]; then curl -L https://downloads.php.net/~carusogabriel/php-${PHP_VERSION}.tar.xz -o /usr/src/php.tar.xz; fi \
+ && if [ "$PHP_MINOR" != "8.0" ]; then curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz; fi \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
  && addgroup -g 82 -S www-data \
  && adduser -u 82 -D -S -G www-data www-data \
