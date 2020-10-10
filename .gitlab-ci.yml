@@ -231,7 +231,6 @@ gpg:verify:
         --with-config-file-path=/usr/local/etc/php \
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
-        --with-mhash \
         --with-openssl \
         --with-sodium \
         --with-password-argon2 \
@@ -273,15 +272,15 @@ build:cli:
   extends: .build
   parallel:
     matrix:
-      - { ARCH: "arm64", TYPE_FLAGS: "", BUILD_TYPE: "cli" }
-      - { ARCH: "amd64", TYPE_FLAGS: "", BUILD_TYPE: "cli" }
+      - { ARCH: "arm64", TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli" }
+      - { ARCH: "amd64", TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli" }
 
 build:fpm:
   extends: .build
   parallel:
     matrix:
-      - { ARCH: "arm64", TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
-      - { ARCH: "amd64", TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
+      - { ARCH: "arm64", TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
+      - { ARCH: "amd64", TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
 
 .containerize:
   rules:
