@@ -2,45 +2,150 @@ include:
   - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/Scan/trivy.yml
 
 stages:
-  - versions
-  - prebuild
+  - pre
   - verify
   - build
-  - publish
   - containerize
+  - post
   - scan
-  - notify
 
-versions:
-  stage: versions
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+variables:
+  LATEST: "7.4"
+  RC: "8.0"
+
+# TODO: This one should be possible to do as a parallel matrix in a nicer way.cache:
+# But for now, it's just to test the build script, so no biggie.
+check:
+  stage: pre
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  script:
+    - touch versions.txt
+    - PHP_73_VERSION=(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
+    - PHP_74_VERSION=(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
+    - PHP_80_VERSION=$(wget -qO- https://downloads.php.net/~carusogabriel | grep -oP "(?<=>php-)([8]\.[0]\.\d\w+)" | sort -V | tail -n1)
+    - |
+      if [ "$(cat version73.txt)" != "${PHP_73_VERSION}" ]; then
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master \
+             -F "variables[PHP_KEY]=7.3" \
+             -F "variables[VERSION]=${PHP_73_VERSION}" \
+             -F "variables[VERSION_TAGS]"
+             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${PHP_73_VERSION}.tar.xz/from/this/mirror" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      else
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master \
+             -F "variables[PHP_KEY]=7.3" \
+             -F "variables[VERSION]=$(cat version7.3.txt)" \
+             -F "variables[SCAN]=true" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      fi
+    - |
+      if [ "$(cat version74.txt)" != "${PHP_74_VERSION}" ]; then
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master \
+             -F "variables[PHP_KEY]=7.4" \
+             -F "variables[VERSION]=${PHP_74_VERSION}" \
+             -F "variables[BUILD]=true" \
+             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${PHP_74_VERSION}.tar.xz/from/this/mirror" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      else
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master \
+             -F "variables[PHP_KEY]=7.4" \
+             -F "variables[VERSION]=$(cat version7.4.txt)" \
+             -F "variables[SCAN]=true" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      fi
+    - |
+      if [ "$(cat version80.txt)" != "${PHP_80_VERSION}" ]; then
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master
+             -F "variables[PHP_KEY]=8.0" \
+             -F "variables[VERSION]=${PHP_80_VERSION}" \
+             -F "variables[BUILD]=true" \
+             -F "variables[DOWNLOAD_URL]=https://downloads.php.net/~carusogabriel/php-${PHP_80_VERSION}.tar.xz" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      else
+        curl -F token=${CI_JOB_TOKEN} \
+             -F ref=master \
+             -F "variables[PHP_KEY]="8.0"" \
+             -F "variables[VERSION]=$(cat version8.0.txt)" \
+             -F "variables[SCAN]=true" \
+            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      fi
+  cache:
+    policy: pull
+    key: php-versions
+    paths:
+      - version8.0.txt
+      - version7.4.txt
+      - version7.3.txt
+
+scan:fpm:
+  stage: scan
+  tags: [ protected, jitesoft ]
+  extends: .container_scanning
+  before_script:
+    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/fpm:${VERSION}"
   variables:
     GIT_STRATEGY: none
-    PHP_MINORS: "4 3"
+  rules:
+    - if: "$SCAN"
+      when: always
+    - if: "$VERSION"
+      when: always
+    - when: never
+
+scan:cli:
+  stage: scan
+  tags: [ protected, jitesoft ]
+  extends: .container_scanning
   before_script:
-    - apk add --no-cache grep
+    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/cli:${VERSION}"
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: "$SCAN"
+      when: always
+    - if: "$VERSION"
+      when: always
+    - when: never
+
+create:cache:
+  rules:
+    - if: "$BUILD"
+      when: on_success
+    - when: never
+  stage: post
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - |
-      for minor in $PHP_MINORS; do
-        wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[${minor}]\.[0-9]{1,2})" | awk 'NR==1{print $1}' >> versions.txt
-      done;
-  artifacts:
+    - echo "${VERSION}" > "version${PHP_KEY}.txt"
+    - curl -X POST -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline
+    - curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline
+  cache:
+    key: php-versions
+    policy: pull-push
     paths:
-      - versions.txt
-    expire_in: 3 hours
-  tags:
-    - jitesoft
+      - version8.0.txt
+      - version7.4.txt
+      - version7.3.txt
 
 gpg:import:
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
-  stage: prebuild
-  before_script:
-    - apk add --no-cache gnupg
+  rules:
+    - if: "$BUILD"
+      when: always
+    - when: never
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  stage: pre
   script:
-    - |
-      if [ -f keys.out ]; then
-        gpg --import keys.out
-      fi
+    - if [ -f keys.out ]; then gpg --import keys.out; fi
     - |
       for key in `cat gpg-keys.txt`; do
         gpg --list-keys ${key} || (gpg --keyserver pgp.mit.edu --recv-keys "${key}" || gpg --keyserver keyserver.pgp.com --recv-keys "${key}" || gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}")
@@ -58,52 +163,47 @@ gpg:import:
     - jitesoft
 
 download:
-  stage: prebuild
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
-  variables:
-    GIT_STRATEGY: none
-  dependencies:
-    - versions
-  before_script:
-    - apk add --no-cache curl
+  rules:
+    - if: "$BUILD"
+      when: always
+    - when: never
+  stage: pre
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - mkdir versions
-    - |
-      for version in `cat versions.txt`; do
-        curl -L https://www.php.net/get/php-${version}.tar.xz/from/this/mirror -o versions/php-${version:0:3}.tar.xz;
-        curl -L https://www.php.net/get/php-${version}.tar.xz.asc/from/this/mirror -o versions/php-${version:0:3}.tar.xz.asc;
-      done;
+    - curl -sSL "${DOWNLOAD_URL}" -o php.tar.xz;
+    - curl -sSL "$(echo $DOWNLOAD_URL | sed 's/tar.xz/tar.xz.asc/g')" -o php.tar.xz.asc;
   artifacts:
     paths:
-      - versions/*.tar.xz
-      - versions/*.tar.xz.asc
+      - php.tar.xz
+      - php.tar.xz.asc
     expire_in: 1 day
-  tags:
-    - jitesoft
 
 gpg:verify:
+  rules:
+    - if: "$BUILD"
+      when: always
+    - when: never
   variables:
     GIT_STRATEGY: none
   stage: verify
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   needs:
     - download
     - gpg:import
-  before_script:
-    - apk add --no-cache gnupg
-    - gpg --import keys.out
   script:
-    - for i in versions/*.tar.xz ; do gpg --verify ${i}.asc ${i} ; done
-  tags:
-    - jitesoft
+    - gpg --import keys.out
+    - gpg --verify php.tar.xz.asc php.tar.xz
 
-.cross:build:shared: &shared
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
-  stage: build
+.build:
+  rules:
+    - if: "$BUILD"
+      when: always
+    - when: never
   needs:
-    - versions
-    - gpg:verify
-    - download
+    - job: gpg:verify
+      artifacts: false
+    - job: download
+      artifacts: true
   before_script:
     - apk add --no-cache oniguruma-dev argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev dpkg-dev
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
@@ -111,41 +211,18 @@ gpg:verify:
     - ccache -s
     - export CPPFLAGS="${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
-    - cp versions/php-${PHP_VERSION}.tar.xz php.tar.xz
+    - php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
-  after_script:
-    - ccache -s
-    - rm -f /usr/local/bin/phpdbg
-    - cp scripts/* /usr/local/bin/
-    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz *)
-    - mkdir binaries
-    - mv /tmp/php-${ARCH}-${PHP_VERSION}-${BUILD_TYPE}.tar.gz binaries/
-  cache:
-    paths:
-      - ccache
-    key: "php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_VERSION}"
-  artifacts:
-    paths:
-      - binaries/
-    when: on_success
-    expire_in: 2 hours
-
-#region FPM
-
-.build:fpm:
-  <<: *shared
   script:
     - cd src
     - EXTRA="--with-pear"
+    # If the php version is 7.3 or lower, it requires pcre and libxml flags.
+    # And if its 7.4 or above, the --with-pear flag is required to include pear.
     - if [ "${PHP_VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex --with-libxml-dir"; fi
     - |
-      ./configure \
-        --enable-fpm \
-        --with-fpm-user=www-data \
-        --with-fpm-group=www-data \
-        --disable-cgi \
+      ./configure ${TYPE_FLAGS} \
         --prefix=/usr/local \
         --disable-short-tags \
         --build="$(cat /etc/apk/arch)-linux-musl" \
@@ -159,6 +236,8 @@ gpg:verify:
         --with-password-argon2 \
         --with-mysqli \
         --with-pdo-mysql \
+        --with-pdo-sqlite=/usr \
+        --with-sqlite3=/usr \
         --with-zlib \
         --with-zlib-dir \
         --with-curl \
@@ -172,237 +251,83 @@ gpg:verify:
     - find -type f -name '*.a' -delete
     - make install
     - cp php.ini-* /usr/local/
+  after_script:
+    - ccache -s
+    - rm -f /usr/local/bin/phpdbg
+    - cp scripts/* /usr/local/bin/
+    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
+    - mkdir binaries
+    - mv /tmp/php-${ARCH}.tar.gz binaries/
+  cache:
+    paths:
+      - ccache
+    key: "php.build.ccache-${ARCH}-${BUILD_TYPE}-${PHP_KEY}"
+  artifacts:
+    paths:
+      - binaries/
+    when: on_success
+    expire_in: 1 day
 
-build:arm:fpm:7.3:
-  extends: .build:fpm
-  variables:
-    PHP_VERSION: "7.3"
-    ARCH: "arm64"
-    BUILD_TYPE: fpm
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-aarch64
+build:cli:
+  extends: .build
+  parallel:
+    matrix:
+      - { ARCH: "arm64", TYPE_FLAGS: "", BUILD_TYPE: "cli" }
+      - { ARCH: "amd64", TYPE_FLAGS: "", BUILD_TYPE: "cli" }
 
-build:amd:fpm:7.3:
-  extends: .build:fpm
-  variables:
-    BUILD_TYPE: fpm
-    PHP_VERSION: "7.3"
-    ARCH: "amd64"
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-amd64
+build:fpm:
+  extends: .build
+  parallel:
+    matrix:
+      - { ARCH: "arm64", TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
+      - { ARCH: "amd64", TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
 
-build:arm:fpm:7.4:
-  extends: .build:fpm
-  variables:
-    BUILD_TYPE: fpm
-    PHP_VERSION: "7.4"
-    ARCH: "arm64"
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-aarch64
-
-build:amd:fpm:7.4:
-  extends: .build:fpm
-  variables:
-    BUILD_TYPE: fpm
-    PHP_VERSION: "7.4"
-    ARCH: "amd64"
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-amd64
-
-# todo: Re-add quai.
-.containerize:fpm:
+.containerize:
+  rules:
+    - if: "$BUILD"
+      when: always
+    - when: never
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
-    - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
-    - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/fpm" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION}-fpm,${PHP_VERSION}-fpm${HUB_TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="fpm" .
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress-plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${PHP_VERSION}" --build-arg BUILD_TYPE="${BUILD_TYPE}" .
   tags: [ jitesoft, buildx, protected ]
 
-
-containerize:fpm:7.3:
+containerize:fpm:
+  extends: .containerize
   needs:
-    - versions
-    - build:arm:fpm:7.3
-    - build:amd:fpm:7.3
-  extends: .containerize:fpm
+    - job: build:fpm
+      artifacts: true
   variables:
-    PHP_VERSION: "7.3"
-    TAGS: ""
-    HUB_TAGS: ""
-
-containerize:fpm:7.4:
-  needs:
-    - build:arm:fpm:7.4
-    - build:amd:fpm:7.4
-    - versions
-  extends: .containerize:fpm
-  variables:
-    PHP_VERSION: "7.4"
-    TAGS: ",latest,stable"
-    HUB_TAGS: ",latest-fpm,stable-fpm"
-#endregion
-
-#region CLI
-
-.build:cli:
-  <<: *shared
-  script:
-    - cd src
-    - EXTRA="--with-pear"
-    - if [ "${PHP_VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex"; fi
-    - |
-      ./configure \
-        --prefix=/usr/local \
-        --disable-short-tags \
-        --build="$(cat /etc/apk/arch)-linux-musl" \
-        --host="$(cat /etc/apk/arch)-linux-musl" \
-        --with-config-file-path=/usr/local/etc/php \
-        --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
-        --enable-option-checking=fatal \
-        --with-mhash \
-        --with-openssl \
-        --with-sodium \
-        --with-password-argon2 \
-        --with-mysqli \
-        --with-pdo-mysql \
-        --with-zlib \
-        --with-curl \
-        --with-libedit \
-        --enable-calendar \
-        --enable-exif \
-        --enable-ftp \
-        --enable-mbstring \
-        --enable-mysqlnd \
-        ${EXTRA}
-    - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
-    - find -type f -name '*.a' -delete
-    - make install
-    - cp php.ini-* /usr/local/
-
-build:arm:cli:7.3:
-  extends: .build:cli
-  variables:
-    PHP_VERSION: "7.3"
-    ARCH: "arm64"
-    BUILD_TYPE: cli
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-aarch64
-
-build:amd:cli:7.3:
-  extends: .build:cli
-  variables:
-    PHP_VERSION: "7.3"
-    ARCH: "amd64"
-    BUILD_TYPE: cli
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-amd64
-
-build:arm:cli:7.4:
-  extends: .build:cli
-  variables:
-    PHP_VERSION: "7.4"
-    ARCH: "arm64"
-    BUILD_TYPE: cli
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-aarch64
-
-build:amd:cli:7.4:
-  extends: .build:cli
-  variables:
-    PHP_VERSION: "7.4"
-    ARCH: "amd64"
-    BUILD_TYPE: cli
-    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-  tags:
-    - native-amd64
-
-# todo: Re-add quai.
-.containerize:cli:
-  stage: containerize
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
-  script:
-    - FULL_VERSION=$(grep ${PHP_VERSION} versions.txt)
-    - printf 'CMD ["php", "-a"]' >> Dockerfile
-    - TAG_LIST=$(helper "${CI_REGISTRY_IMAGE}/cli" "${FULL_VERSION},${PHP_VERSION}${TAGS}")
-    - HUB_TAG_LIST=$(helper "jitesoft/php" "${FULL_VERSION},${FULL_VERSION}-cli,${PHP_VERSION},${PHP_VERSION}-cli${HUB_TAGS}")
-    - docker buildx build --platform "linux/amd64,linux/arm64" --progress plain --push ${TAG_LIST} ${HUB_TAG_LIST} --build-arg PHP_MINOR=${PHP_VERSION} --build-arg PHP_VERSION="${FULL_VERSION}" --build-arg BUILD_TYPE="cli" .
-  tags: [ jitesoft, buildx, protected ]
-
-containerize:cli:7.3:
-  needs:
-    - build:arm:cli:7.3
-    - build:amd:cli:7.3
-    - versions
-  extends: .containerize:cli
-  variables:
-    PHP_VERSION: "7.3"
-    TAGS: ""
-    HUB_TAGS: ""
-
-containerize:cli:7.4:
-  needs:
-    - build:arm:cli:7.4
-    - build:amd:cli:7.4
-    - versions
-  extends: .containerize:cli
-  variables:
-    PHP_VERSION: "7.4"
-    TAGS: ",latest,stable"
-    HUB_TAGS: ",latest,stable,latest-cli,stable-cli"
-#endregion
-
-.scan:base:
-  extends: .container_scanning
-
-scan:fpm:7.4:
-  needs:
-    - containerize:fpm:7.4
-  extends: .scan:base
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.4"
-    GIT_STRATEGY: none
-
-scan:cli:7.4:
-  needs:
-    - containerize:cli:7.4
-  extends: .scan:base
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.4"
-    GIT_STRATEGY: none
-
-scan:fpm:7.3:
-  needs:
-    - containerize:fpm:7.3
-  extends: .scan:base
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm:7.3"
-    GIT_STRATEGY: none
-
-scan:cli:7.3:
-  needs:
-    - containerize:cli:7.3
-  extends: .scan:base
-  variables:
-    SCANNING_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli:7.3"
-    GIT_STRATEGY: none
-
-trigger_build:
-  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
-  stage: notify
+    PHP_TYPE: "fpm"
   before_script:
-    - apk add --no-cache curl
-  script:
-    - "curl -X POST -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline"
-    - "curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline"
+    - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
+    - |
+      INCLUDE_TAGS=""
+      if [ "${PHP_KEY}" == "${LATEST}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm latest,stable) $(helper ghcr.io/jitesoft/php,jitesoft/php latest-fpm,stable-fpm)"
+      else if [ "${PHP_KEY}" == "${RC}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm rc,unstable) $(helper ghcr.io/jitesoft/php,jitesoft/php rc-fpm,unstable-fpm)"
+      fi
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${PHP_VERSION},${PHP_KEY})"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${PHP_VERSION}-fpm,${PHP_KEY}-fpm)"
+    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
+
+containerize:cli:
+  extends: .containerize
+  needs:
+    - job: build:cli
+      artifacts: true
   variables:
-    GIT_STRATEGY: none
+    PHP_TYPE: "cli"
+  before_script:
+    - |
+      INCLUDE_TAGS=""
+      if [ "${PHP_KEY}" == "${LATEST}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
+      else if [ "${PHP_KEY}" == "${RC}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php rc,unstable) $(helper jitesoft/php,ghcr.io/jitesoft/php rc-cli,unstable-cli)"
+      fi
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${PHP_VERSION},${PHP_KEY})"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${PHP_VERSION},${PHP_KEY}${PHP_VERSION}-cli,${PHP_KEY}-cli)"
+    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
