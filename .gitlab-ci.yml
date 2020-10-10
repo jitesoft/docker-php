@@ -182,7 +182,7 @@ download:
 gpg:verify:
   rules:
     - if: "$BUILD"
-      when: always
+      when: on_success
     - when: never
   variables:
     GIT_STRATEGY: none
@@ -196,10 +196,11 @@ gpg:verify:
     - gpg --verify php.tar.xz.asc php.tar.xz
 
 .build:
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   stage: build
   rules:
     - if: "$BUILD"
-      when: always
+      when: on_success
     - when: never
   needs:
     - job: gpg:verify
@@ -304,7 +305,7 @@ build:fpm:amd:
 .containerize:
   rules:
     - if: "$BUILD"
-      when: always
+      when: on_success
     - when: never
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
