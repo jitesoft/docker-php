@@ -35,6 +35,14 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
     * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
     * `7.3-cli`, `7.3`
 
+### GitHub
+
+* `ghcr.io/jitesoft/php`
+    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
+    * `7.3-fpm`
+    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
+    * `7.3-cli`, `7.3`
+
 ### Quay.io
 
 * `quay.io/jitesoft/php`
