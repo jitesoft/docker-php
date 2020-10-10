@@ -196,6 +196,8 @@ gpg:verify:
     - gpg --verify php.tar.xz.asc php.tar.xz
 
 .build:
+  tags:
+    - "native-${ARCH}"
   stage: build
   rules:
     - if: "$BUILD"
