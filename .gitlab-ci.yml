@@ -214,7 +214,6 @@ gpg:verify:
     - ccache -s
     - export CPPFLAGS="${CPPFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
-    - php.tar.xz
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
