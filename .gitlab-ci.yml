@@ -196,7 +196,7 @@ gpg:verify:
     - gpg --verify php.tar.xz.asc php.tar.xz
 
 .build:
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
   stage: build
   rules:
     - if: "$BUILD"
