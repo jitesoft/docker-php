@@ -37,6 +37,7 @@ check:
              -F ref=master \
              -F "variables[PHP_KEY]=7.3" \
              -F "variables[VERSION]=${PHP_73_VERSION}" \
+             -F "variables[BUILD]=true" \
              -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${PHP_73_VERSION}.tar.xz/from/this/mirror" \
             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       else
