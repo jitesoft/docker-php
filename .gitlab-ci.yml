@@ -32,7 +32,7 @@ check:
     - PHP_74_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
     - PHP_80_VERSION=$(wget -qO- https://downloads.php.net/~carusogabriel | grep -oP "(?<=>php-)([8]\.[0]\.\d\w+)" | sort -V | tail -n1)
     - |
-      if [ "$(cat version7.3.txt)" != "${PHP_73_VERSION}" ]; then
+      if [ "$(cat version7.3.txt)" != "${PHP_73_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
              -F "variables[PHP_KEY]=7.3" \
@@ -48,7 +48,7 @@ check:
             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       fi
     - |
-      if [ "$(cat version7.4.txt)" != "${PHP_74_VERSION}" ]; then
+      if [ "$(cat version7.4.txt)" != "${PHP_74_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
              -F "variables[PHP_KEY]=7.4" \
@@ -65,7 +65,7 @@ check:
             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       fi
     - |
-      if [ "$(cat version8.0.txt)" != "${PHP_80_VERSION}" ]; then
+      if [ "$(cat version8.0.txt)" != "${PHP_80_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
              -F "variables[PHP_KEY]=8.0" \
@@ -294,7 +294,7 @@ build:fpm:arm:
   variables:
     ARCH: arm64
     TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
-    BUILD_TYPE: cli
+    BUILD_TYPE: fpm
 
 build:fpm:amd:
   tags: [ native-amd64 ]
@@ -302,7 +302,7 @@ build:fpm:amd:
   variables:
     ARCH: amd64
     TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
-    BUILD_TYPE: cli
+    BUILD_TYPE: fpm
 
 .containerize:
   rules:
