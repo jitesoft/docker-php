@@ -312,7 +312,7 @@ build:fpm:amd:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${BUILD_TYPE}" .
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" .
   tags: [ jitesoft, buildx, protected ]
 
 containerize:fpm:
