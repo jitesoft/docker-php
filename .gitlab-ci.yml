@@ -15,9 +15,9 @@ variables:
 check:
   parallel:
     matrix:
-      - { MINOR: "7.3", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" }
-      - { MINOR: "7.4", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" }
-      - { MINOR: "8.0", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([8]\.[0]\.[0-9]{1,2})" }
+      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})' }
+      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})' }
+      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})' }
   stage: pre
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -28,7 +28,7 @@ check:
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - touch version${MINOR}.txt
-    - FULL_VERSION=$(wget -qO- "${DL_URI}" | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
+    - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
     - URI="https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror"
     - |
       if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
