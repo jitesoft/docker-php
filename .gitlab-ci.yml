@@ -10,12 +10,14 @@ stages:
   - scan
 
 variables:
-  LATEST: "7.4"
-  RC: "8.0"
+  LATEST: "8.0"
 
-# TODO: This one should be possible to do as a parallel matrix in a nicer way.
-# But for now, it's just to test the build script, so no biggie.
 check:
+  parallel:
+    matrix:
+      - { MINOR: "7.3", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" }
+      - { MINOR: "7.4", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" }
+      - { MINOR: "8.0", DL_URI: "https://www.php.net/downloads.php", GREP_EXP: "(?<=>php-)([8]\.[0]\.[0-9]{1,2})" }
   stage: pre
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -25,60 +27,23 @@ check:
     - when: never
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - touch version8.0.txt
-    - touch version7.4.txt
-    - touch version7.3.txt
-    - PHP_73_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[3]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
-    - PHP_74_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "(?<=>php-)([7]\.[4]\.[0-9]{1,2})" | awk 'NR==1{print $1}')
-    - PHP_80_VERSION=$(wget -qO- https://downloads.php.net/~carusogabriel | grep -oP "(?<=>php-)([8]\.[0]\.\d\w+)" | sort -V -f | tail -n1)
+    - touch version${MINOR}.txt
+    - FULL_VERSION=$(wget -qO- "${DL_URI}" | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
+    - URI="https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror"
     - |
-      if [ "$(cat version7.3.txt)" != "${PHP_73_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
+      if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
-             -F "variables[PHP_KEY]=7.3" \
-             -F "variables[VERSION]=${PHP_73_VERSION}" \
+             -F "variables[PHP_KEY]=${MINOR}" \
+             -F "variables[VERSION]=${FULL_VERSION}" \
              -F "variables[BUILD]=true" \
-             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${PHP_73_VERSION}.tar.xz/from/this/mirror" \
+             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror" \
             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       else
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
-             -F "variables[PHP_KEY]=7.3" \
-             -F "variables[VERSION]=$(cat version7.3.txt)" \
-             -F "variables[SCAN]=true" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      fi
-    - |
-      if [ "$(cat version7.4.txt)" != "${PHP_74_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]=7.4" \
-             -F "variables[VERSION]=${PHP_74_VERSION}" \
-             -F "variables[BUILD]=true" \
-             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${PHP_74_VERSION}.tar.xz/from/this/mirror" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      else
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]=7.4" \
-             -F "variables[VERSION]=$(cat version7.4.txt)" \
-             -F "variables[SCAN]=true" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      fi
-    - |
-      if [ "$(cat version8.0.txt)" != "${PHP_80_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]=8.0" \
-             -F "variables[VERSION]=${PHP_80_VERSION}" \
-             -F "variables[BUILD]=true" \
-             -F "variables[DOWNLOAD_URL]=https://downloads.php.net/~carusogabriel/php-${PHP_80_VERSION}.tar.xz" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      else
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]="8.0"" \
-             -F "variables[VERSION]=$(cat version8.0.txt)" \
+             -F "variables[PHP_KEY]=${MINOR}" \
+             -F "variables[VERSION]=$(cat version${MINOR}.txt)" \
              -F "variables[SCAN]=true" \
             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       fi
@@ -86,9 +51,7 @@ check:
     policy: pull
     key: php-versions
     paths:
-      - version8.0.txt
-      - version7.4.txt
-      - version7.3.txt
+      - version${MINOR}.txt
 
 scan:fpm:
   stage: scan
@@ -331,8 +294,6 @@ containerize:fpm:
       INCLUDE_TAGS=""
       if [ "${PHP_KEY}" == "${LATEST}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm latest,stable) $(helper ghcr.io/jitesoft/php,jitesoft/php latest-fpm,stable-fpm)"
-      elif [ "${PHP_KEY}" == "${RC}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm rc,unstable) $(helper ghcr.io/jitesoft/php,jitesoft/php rc-fpm,unstable-fpm)"
       fi
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${VERSION},${PHP_KEY})"
     - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION}-fpm,${PHP_KEY}-fpm)"
@@ -352,8 +313,6 @@ containerize:cli:
       INCLUDE_TAGS=""
       if [ "${PHP_KEY}" == "${LATEST}" ]; then
         INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
-      elif [ "${PHP_KEY}" == "${RC}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php rc,unstable) $(helper jitesoft/php,ghcr.io/jitesoft/php rc-cli,unstable-cli)"
       fi
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
     - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
