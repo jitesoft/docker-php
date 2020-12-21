@@ -15,6 +15,6 @@ RUN apk add --no-cache --virtual .build-deps gcc make coreutils libc-dev autocon
  && printf "no\n" | pecl install redis \
  && php-ext configure gd --with-jpeg --with-webp \
  && php-ext install gmp zip gd \
- && php-ext enable redis imagick \
+ && php-ext enable redis \
  && apk del .build-deps \
  && apk add --no-cache --virtual .runtime gd gmp freetype libltdl libzip libwebp xz libjpeg-turbo libpng
