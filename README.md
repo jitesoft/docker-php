@@ -18,6 +18,9 @@ That is, the images are built for both amd64 and arm64.
 
 Support for x-arch is available on DockerHub and GitLab until quay.io supports multi-arch manifests.
 
+The runtime images includes the following extra extensions: gd (jpg, webp, png), zip, gmp and redis.  
+These might change during it's lifetime.
+
 ### DockerHub
 
 * `jitesoft/php`
@@ -27,7 +30,7 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
     * `8.0`, `cli`, `8.0-cli`, `stable`, `stable-cli`, `latest`, `latest-cli`
     * `7.4`, `7.4-cli`
     * `7.3`, `7.3-cli`
-
+    
 ### GitLab
 
 * `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
@@ -35,10 +38,18 @@ Support for x-arch is available on DockerHub and GitLab until quay.io supports m
     * `7.4`
     * `7.3`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
-    * `8.0-fpm`, `latest` , `stable`
+    * `8.0`, `latest` , `stable`
     * `7.4`
     * `7.3`
-
+* `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/cli`
+  * `8.0`, `latest` , `stable`
+  * `7.4`
+  * `7.3`
+* `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/fpm`
+  * `8.0`, `latest` , `stable`
+  * `7.4`
+  * `7.3`
+  
 ### GitHub
 
 * `ghcr.io/jitesoft/php`

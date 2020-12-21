@@ -86,6 +86,36 @@ scan:cli:
       when: always
     - when: never
 
+scan:runtime:fpm:
+  stage: scan
+  tags: [ protected, jitesoft ]
+  extends: .container_scanning
+  before_script:
+    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/fpm:${VERSION}"
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: "$SCAN"
+      when: always
+    - if: "$VERSION"
+      when: always
+    - when: never
+
+scan:runtime:cli:
+  stage: scan
+  tags: [ protected, jitesoft ]
+  extends: .container_scanning
+  before_script:
+    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/cli:${VERSION}"
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: "$SCAN"
+      when: always
+    - if: "$VERSION"
+      when: always
+    - when: never
+
 create:cache:
   rules:
     - if: "$BUILD"
