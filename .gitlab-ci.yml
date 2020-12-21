@@ -31,6 +31,9 @@ check:
     - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
     - URI="https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror"
     - |
+      if [ -n "${FORCE_RUNTIME}" ]; then
+        curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=fmp" -F "variables[PHP_KEY]=7.4" -F "variables[VERSION]=7.4.13" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      fi
       if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
              -F ref=master \
