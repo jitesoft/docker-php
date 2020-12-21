@@ -1,0 +1,20 @@
+ARG PHP_VERSION
+ARG PHP_TYPE
+FROM registry.gitlab.com/jitesoft/dockerfiles/php/${PHP_TYPE}:${PHP_VERSION}
+LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
+      maintainer.org="Jitesoft" \
+      maintainer.org.uri="https://jitesoft.com" \
+      com.jitesoft.project.repo.type="git" \
+      com.jitesoft.project.repo.uri="https://gitlab.com/jitesoft/dockerfiles/php" \
+      com.jitesoft.project.repo.issues="https://gitlab.com/jitesoft/dockerfiles/php/issues" \
+      com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/php" \
+      com.jitesoft.project.app.php.variant="runtime"
+
+RUN apk add --no-cache --virtual .build-deps gcc make coreutils libc-dev autoconf \
+    gmp-dev gd-dev libpng-dev libjpeg-turbo-dev libzip-dev libwebp-dev \
+ && printf "no\n" | pecl install redis \
+ && php-ext configure gd --with-jpeg --with-webp \
+ && php-ext install gmp zip gd \
+ && php-ext enable redis imagick \
+ && apk del .build-deps \
+ && apk add --no-cache --virtual .runtime gd gmp freetype libltdl libzip libwebp xz libjpeg-turbo libpng

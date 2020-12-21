@@ -92,8 +92,8 @@ create:cache:
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - echo "${VERSION}" > "version${PHP_KEY}.txt"
-    - curl -X POST -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline
-    - curl -X POST -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline
+    - curl -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline
+    - curl -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline
   cache:
     key: php-versions
     policy: pull-push
@@ -277,6 +277,8 @@ build:fpm:amd:
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" .
+  after_script:
+    - curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=${BUILD_TYPE}" -F "variables[PHP_KEY]=${PHP_KEY}" -F "variables[VERSION]=${VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
   tags: [ jitesoft, buildx, protected ]
 
 containerize:fpm:
@@ -317,3 +319,21 @@ containerize:cli:
     - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
     - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
     - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
+
+containerize:runtime:
+  stage: containerize
+  rules:
+    - if: "$RUNTIME"
+      when: always
+    - when: never
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  script:
+    - |
+      INCLUDE_TAGS=""
+      if [ "${PHP_KEY}" == "${LATEST}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} latest,stable)"
+      fi
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} ${VERSION},${PHP_KEY})"
+    - TAG_LIST="${INCLUDE_TAGS} ${GITLAB_TAGS}"
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_TYPE="${PHP_TYPE}" --build-arg PHP_VERSION="${PHP_KEY}" -f runtime/Dockerfile .
+  tags: [ jitesoft, buildx, protected ]
