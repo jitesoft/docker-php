@@ -33,6 +33,7 @@ check:
     - |
       if [ -n "${FORCE_RUNTIME}" ]; then
         curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=fpm" -F "variables[PHP_KEY]=${MINOR}" -F "variables[VERSION]=${FULL_VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+        curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=cli" -F "variables[PHP_KEY]=${MINOR}" -F "variables[VERSION]=${FULL_VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       fi
       if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
         curl -F token=${CI_JOB_TOKEN} \
