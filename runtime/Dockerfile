@@ -11,7 +11,7 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       com.jitesoft.project.app.php.variant="runtime"
 
 RUN apk add --no-cache --virtual .build-deps coreutils $PHPIZE_DEPS \
-    gmp-dev gd-dev libpng-dev libjpeg-turbo-dev libwebp-dev libzip-dev imagemagick-dev \
+    gmp-dev gd-dev libpng-dev libjpeg-turbo-dev libwebp-dev libzip-dev imagemagick-dev file \
  && printf "no\n" | pecl install redis \
  && printf "no\n" | pecl install imagick \
  && php-ext configure gd --with-jpeg --with-webp \
