@@ -18,7 +18,7 @@ That is, the images are built for both amd64 and arm64.
 
 Support for x-arch is available on DockerHub and GitLab until quay.io supports multi-arch manifests.
 
-The runtime images includes the following extra extensions: gd (jpg, webp, png), zip, gmp and redis.  
+The runtime images includes the following extra extensions: gd (jpg, webp, png), zip, imagick, gmp and redis.  
 These might change during it's lifetime.
 
 ### DockerHub
