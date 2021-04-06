@@ -60,11 +60,9 @@ check:
 scan:fpm:
   stage: scan
   tags: [ protected, jitesoft ]
-  extends: .container_scanning
+  extends: .scan.container.trivy.remote
   before_script:
     - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/fpm:${VERSION}"
-  variables:
-    GIT_STRATEGY: none
   rules:
     - if: "$SCAN"
       when: always
@@ -75,11 +73,9 @@ scan:fpm:
 scan:cli:
   stage: scan
   tags: [ protected, jitesoft ]
-  extends: .container_scanning
+  extends: .scan.container.trivy.remote
   before_script:
     - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/cli:${VERSION}"
-  variables:
-    GIT_STRATEGY: none
   rules:
     - if: "$SCAN"
       when: always
@@ -90,11 +86,9 @@ scan:cli:
 scan:runtime:fpm:
   stage: scan
   tags: [ protected, jitesoft ]
-  extends: .container_scanning
+  extends: .scan.container.trivy.remote
   before_script:
     - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/fpm:${VERSION}"
-  variables:
-    GIT_STRATEGY: none
   rules:
     - if: "$SCAN"
       when: always
@@ -105,11 +99,9 @@ scan:runtime:fpm:
 scan:runtime:cli:
   stage: scan
   tags: [ protected, jitesoft ]
-  extends: .container_scanning
+  extends: .scan.container.trivy.remote
   before_script:
     - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/cli:${VERSION}"
-  variables:
-    GIT_STRATEGY: none
   rules:
     - if: "$SCAN"
       when: always
