@@ -241,7 +241,7 @@ gpg:verify:
         --enable-mbstring \
         --enable-mysqlnd \
         ${EXTRA}
-    - make -j4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
+    - make -j -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
     - cp php.ini-* /usr/local/
