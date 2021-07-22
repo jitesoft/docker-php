@@ -258,7 +258,7 @@ containerize.runtime:
   script:
     - TAGS="${TAGS},${VERSION},${PHP_KEY}"
     - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} ${TAGS})"
-    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" -f runtime/Dockerfile .
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg PHP_TYPE="${PHP_TYPE}" -f runtime/Dockerfile .
   tags: [ buildx, protected ]
 
 create:cache:
