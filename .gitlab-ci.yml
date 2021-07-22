@@ -272,6 +272,7 @@ create:cache:
     - job: containerize.cli
       artifacts: false
     - job: containerize.runtime
+      optional: true
       artifacts: false
   stage: .post
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
