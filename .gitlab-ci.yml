@@ -2,11 +2,12 @@ include:
   - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/Scan/trivy.yml
 
 stages:
+  - pre
   - build
   - containerize
 
 check:
-  stage: .pre
+  stage: pre
   parallel:
     matrix:
       - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "old", GIT_STRATEGY: "none" }
