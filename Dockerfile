@@ -33,7 +33,7 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
- && addgroup -g 82 -S www-data \
+ && addgroup -g 82 -S www-data 2>/dev/null \
  && adduser -u 82 -D -S -G www-data www-data \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
