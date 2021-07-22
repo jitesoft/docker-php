@@ -23,7 +23,8 @@ check:
   script:
     - touch version${MINOR}.txt
     - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
-      if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
+    - |
+      if [ ! -z "${FORCE_BUILD+x}" ] || [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ]; then
         echo "Triggering build of ${FULL_VERSION}"
         curl \
           -F token=${CI_JOB_TOKEN} \
