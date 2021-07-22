@@ -240,6 +240,11 @@ containerize.fpm:
     - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/fpm ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${FPM_TAGS})"
 
 containerize.runtime:
+  needs:
+    - job: containerize.fpm
+      artifacts: false
+    - job: containerize.cli
+      artifacts: false
   rules:
     - if: '$BUILD && $PHP_KEY != "8.0"'
       when: always
@@ -261,6 +266,13 @@ create:cache:
     - if: "$BUILD"
       when: on_success
     - when: never
+  needs:
+    - job: containerize.fpm
+      artifacts: false
+    - job: containerize.cli
+      artifacts: false
+    - job: containerize.runtime
+      artifacts: false
   stage: .post
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
