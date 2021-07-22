@@ -32,6 +32,7 @@ check:
           -F "variables[PHP_KEY]=${MINOR}" \
           -F "variables[VERSION]=${FULL_VERSION}" \
           -F "variables[BUILD]=true" \
+          -F "variables[TAGS]=${TAGS}" \
           -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror" \
           https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       else
@@ -206,13 +207,17 @@ containerize.cli:
     PHP_TYPE: "cli"
   before_script:
     - |
-      INCLUDE_TAGS=""
-      if [ "${PHP_KEY}" == "${LATEST}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
-      fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
-    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
+      TAGS="${TAGS},${VERSION},${PHP_KEY}"
+      CLI_TAGS=""; counter=0
+      for tag in ${TAGS//,/ }; do
+        if [ $counter == 0 ]; then
+          CLI_TAGS="${tag}-cli"
+        else
+          CLI_TAGS="${CLI_TAGS},${tag}-cli"
+        fi
+        counter=$((counter+1))
+      done
+    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/cli ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${CLI_TAGS},${TAGS})"
 
 containerize.fpm:
   extends: .containerize
@@ -221,13 +226,17 @@ containerize.fpm:
   before_script:
     - printf 'EXPOSE 9000\nCMD ["php-fpm"]' >> Dockerfile
     - |
-      INCLUDE_TAGS=""
-      if [ "${PHP_KEY}" == "${LATEST}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm latest,stable) $(helper ghcr.io/jitesoft/php,jitesoft/php latest-fpm,stable-fpm)"
-      fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/fpm ${VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION}-fpm,${PHP_KEY}-fpm)"
-    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
+      TAGS="${TAGS},${VERSION},${PHP_KEY}"
+      FPM_TAGS=""; counter=0
+      for tag in ${TAGS//,/ }; do
+        if [ $counter == 0 ]; then
+          FPM_TAGS="${tag}-fpm"
+        else
+          FPM_TAGS="${FPM_TAGS},${tag}-fpm"
+        fi
+        counter=$((counter+1))
+      done
+    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/fpm ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${FPM_TAGS})"
 
 create:cache:
   rules:
@@ -271,3 +280,22 @@ trigger:
   trigger:
     project: jitesoft/dockerfiles/composer-alpine
     branch: master
+
+trigger.runtime:
+  stage: .post
+  rules:
+    - if: "$BUILD"
+      when: on_success
+    - when: never
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  script:
+    - echo "Triggering build of runtime ${VERSION}"
+    - |
+      curl \
+          -F token=${CI_JOB_TOKEN} \
+          -F ref=master \
+          -F "variables[PHP_KEY]=${PHP_KEY}" \
+          -F "variables[VERSION]=${VERSION}" \
+          -F "variables[RUNTIME]=true" \
+          https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+      fi
