@@ -21,10 +21,13 @@ ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie" \
     PHP_SRC_DIR="/usr/src"
 
+ARG WWWDATA_GUID="82"
 ARG PHP_VERSION
 ARG BUILD_TYPE
 ARG TARGETARCH
 ARG PHP_MINOR
+
+ENV WWWDATA_GUID="${WWWDATA_GUID}"
 
 RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
     apk add --virtual .phpize-deps $PHPIZE_DEPS \
@@ -33,8 +36,8 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && curl -L https://www.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror -o /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
- && addgroup -g 82 -S www-data 2>/dev/null \
- && adduser -u 82 -D -S -G www-data www-data \
+ && addgroup -g ${WWWDATA_GUID} -S www-data 2>/dev/null \
+ && adduser -u ${WWWDATA_GUID} -D -S -G www-data www-data \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && runDeps="$( \
