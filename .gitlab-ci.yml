@@ -246,7 +246,7 @@ containerize.runtime:
     - job: containerize.cli
       artifacts: false
   rules:
-    - if: '$BUILD && $PHP_KEY != "8.0"'
+    - if: "$BUILD"
       when: always
     - when: never
   parallel:
@@ -272,7 +272,6 @@ create:cache:
     - job: containerize.cli
       artifacts: false
     - job: containerize.runtime
-      optional: true
       artifacts: false
   stage: .post
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
