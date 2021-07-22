@@ -36,8 +36,9 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && cp /tmp/php-bin/php.tar.xz /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
- && addgroup -g ${WWWDATA_GUID} -S www-data 2>/dev/null \
- && adduser -u ${WWWDATA_GUID} -D -S -G www-data www-data \
+ && set -eux; \
+    addgroup -g ${WWWDATA_GUID} -S www-data; \
+    adduser -u ${WWWDATA_GUID} -D -S -G www-data www-data \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && runDeps="$( \
@@ -53,7 +54,7 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && if [ "${BUILD_TYPE}" == "fpm" ]; then \
       sed 's!=NONE/!=!g' php-fpm.conf.default | tee php-fpm.conf > /dev/null; \
       cp php-fpm.d/www.conf.default php-fpm.d/www.conf; \
-      echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/2\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
+      echo $'[global] \nerror_log = /proc/self/fd/2\nlog_limit = 8192 \n[www]\naccess.log = /proc/self/fd/1\nclear_env = no\ncatch_workers_output = yes\ndecorate_workers_output = no\n' >> php-fpm.d/docker.conf; \
       echo $'[global]\ndaemonize = no\n[www]\nlisten = 9000\n' >> php-fpm.d/zz-docker.conf; \
       apk add --no-cache fcgi; \
    fi \
