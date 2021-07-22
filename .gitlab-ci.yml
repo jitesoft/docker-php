@@ -2,54 +2,46 @@ include:
   - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/Scan/trivy.yml
 
 stages:
-  - pre
-  - verify
   - build
   - containerize
-  - post
-  - scan
-
-variables:
-  LATEST: "8.0"
 
 check:
+  stage: .pre
   parallel:
     matrix:
-      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})' }
-      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})' }
-      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})' }
-  stage: pre
+      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "" }
+      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7" }
+      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8" }
+  variables:
+    GIT_STRATEGY: none
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
     - when: never
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - touch version${MINOR}.txt
     - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
-    - URI="https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror"
-    - |
-      if [ -n "${FORCE_RUNTIME}" ]; then
-        curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=fpm" -F "variables[PHP_KEY]=${MINOR}" -F "variables[VERSION]=${FULL_VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-        curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=cli" -F "variables[PHP_KEY]=${MINOR}" -F "variables[VERSION]=${FULL_VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      fi
       if [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ] || [ -n "${FORCE_BUILD}" ]; then
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]=${MINOR}" \
-             -F "variables[VERSION]=${FULL_VERSION}" \
-             -F "variables[BUILD]=true" \
-             -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+        echo "Triggering build of ${FULL_VERSION}"
+        curl \
+          -F token=${CI_JOB_TOKEN} \
+          -F ref=master \
+          -F "variables[PHP_KEY]=${MINOR}" \
+          -F "variables[VERSION]=${FULL_VERSION}" \
+          -F "variables[BUILD]=true" \
+          -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror" \
+          https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       else
-        curl -F token=${CI_JOB_TOKEN} \
-             -F ref=master \
-             -F "variables[PHP_KEY]=${MINOR}" \
-             -F "variables[VERSION]=$(cat version${MINOR}.txt)" \
-             -F "variables[SCAN]=true" \
-            https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
+        echo "Triggering scan of ${FULL_VERSION}"
+        curl \
+          -F token=${CI_JOB_TOKEN} \
+          -F ref=master \
+          -F "variables[VERSION]=${FULL_VERSION}" \
+          -F "variables[SCAN]=true" \
+          https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       fi
   cache:
     policy: pull
@@ -57,84 +49,14 @@ check:
     paths:
       - version${MINOR}.txt
 
-scan:fpm:
-  stage: scan
-  tags: [ protected, jitesoft ]
-  extends: .scan.container.trivy.remote
-  before_script:
-    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/fpm:${VERSION}"
-  rules:
-    - if: "$SCAN"
-      when: always
-    - if: "$VERSION"
-      when: always
-    - when: never
-
-scan:cli:
-  stage: scan
-  tags: [ protected, jitesoft ]
-  extends: .scan.container.trivy.remote
-  before_script:
-    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/cli:${VERSION}"
-  rules:
-    - if: "$SCAN"
-      when: always
-    - if: "$VERSION"
-      when: always
-    - when: never
-
-scan:runtime:fpm:
-  stage: scan
-  tags: [ protected, jitesoft ]
-  extends: .scan.container.trivy.remote
-  before_script:
-    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/fpm:${VERSION}"
-  rules:
-    - if: "$SCAN"
-      when: always
-    - if: "$VERSION"
-      when: always
-    - when: never
-
-scan:runtime:cli:
-  stage: scan
-  tags: [ protected, jitesoft ]
-  extends: .scan.container.trivy.remote
-  before_script:
-    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/runtime/cli:${VERSION}"
-  rules:
-    - if: "$SCAN"
-      when: always
-    - if: "$VERSION"
-      when: always
-    - when: never
-
-create:cache:
-  rules:
-    - if: "$BUILD"
-      when: on_success
-    - when: never
-  stage: post
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
-  script:
-    - echo "${VERSION}" > "version${PHP_KEY}.txt"
-    - curl -F token=${COMPOSER_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048644/trigger/pipeline
-    - curl -F token=${PHP_FPM_TRIGGER_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4048646/trigger/pipeline
-  cache:
-    key: php-versions
-    policy: pull-push
-    paths:
-      - version8.0.txt
-      - version7.4.txt
-      - version7.3.txt
-
 gpg:import:
   rules:
-    - if: "$BUILD"
+    - changes:
+        - gpg-keys.txt
       when: always
     - when: never
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
-  stage: pre
+  stage: .pre
   script:
     - if [ -f keys.out ]; then gpg --import keys.out; fi
     - |
@@ -146,58 +68,41 @@ gpg:import:
     key: php.gpg.keyring
     paths:
       - keys.out
-  artifacts:
-    paths:
-      - keys.out
-    expire_in: 3 hours
-  tags:
-    - jitesoft
 
 download:
   rules:
     - if: "$BUILD"
       when: always
     - when: never
-  stage: pre
+  stage: .pre
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - echo "Downloading ${VERSION}"
     - curl -sSL "${DOWNLOAD_URL}" -o php.tar.xz;
     - curl -sSL "$(echo $DOWNLOAD_URL | sed 's/tar.xz/tar.xz.asc/g')" -o php.tar.xz.asc;
+    - gpg --import keys.out
+    - gpg --verify php.tar.xz.asc php.tar.xz
   artifacts:
     paths:
       - php.tar.xz
-      - php.tar.xz.asc
     expire_in: 1 day
-
-gpg:verify:
-  rules:
-    - if: "$BUILD"
-      when: on_success
-    - when: never
-  variables:
-    GIT_STRATEGY: none
-  stage: verify
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
-  needs:
-    - download
-    - gpg:import
-  script:
-    - gpg --import keys.out
-    - gpg --verify php.tar.xz.asc php.tar.xz
+  cache:
+    policy: pull
+    key: php.gpg.keyring
+    paths:
+      - keys.out
 
 .build:
+  parallel:
+    matrix:
+      - { TYPE_FLAGS: "", BUILD_TYPE: "cli" }
+      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
   stage: build
   rules:
     - if: "$BUILD"
       when: on_success
     - when: never
-  needs:
-    - job: gpg:verify
-      artifacts: false
-    - job: download
-      artifacts: true
   before_script:
     - export CCACHE_DIR="${CI_PROJECT_DIR}/ccache"
     - apk add --no-cache oniguruma-dev argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev dpkg-dev
@@ -226,6 +131,7 @@ gpg:verify:
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-openssl \
+        --with-mhash \
         --with-sodium \
         --with-password-argon2 \
         --with-mysqli \
@@ -249,9 +155,9 @@ gpg:verify:
     - ccache -s
     - rm -f /usr/local/bin/phpdbg
     - cp scripts/* /usr/local/bin/
-    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}.tar.gz *)
+    - $(cd /usr/local && tar -czf /tmp/php-${ARCH}-${BUILD_TYPE}.tar.gz *)
     - mkdir binaries
-    - mv /tmp/php-${ARCH}.tar.gz binaries/
+    - mv /tmp/php-${ARCH}-${BUILD_TYPE}.tar.gz binaries/
   cache:
     paths:
       - ccache
@@ -262,39 +168,26 @@ gpg:verify:
     when: on_success
     expire_in: 1 day
 
-build:cli:arm:
-  tags: [ native-arm64 ]
+build:amd:
+  tags:
+    - "native-amd64"
   extends: .build
   variables:
-    ARCH: arm64
-    TYPE_FLAGS: "--with-mhash"
-    BUILD_TYPE: cli
+    ARCH: "amd64"
 
-build:cli:amd:
-  tags: [ native-amd64 ]
+build:arm:
+  tags:
+    - "native-aarch64"
   extends: .build
   variables:
-    ARCH: amd64
-    TYPE_FLAGS: "--with-mhash"
-    BUILD_TYPE: cli
-
-build:fpm:arm:
-  tags: [ native-arm64 ]
-  extends: .build
-  variables:
-    ARCH: arm64
-    TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
-    BUILD_TYPE: fpm
-
-build:fpm:amd:
-  tags: [ native-amd64 ]
-  extends: .build
-  variables:
-    ARCH: amd64
-    TYPE_FLAGS: "--with-mhash --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data"
-    BUILD_TYPE: fpm
+    ARCH: "arm64"
 
 .containerize:
+  needs:
+    - job: build:amd
+      artifacts: true
+    - job: build:arm
+      artifacts: true
   rules:
     - if: "$BUILD"
       when: on_success
@@ -303,17 +196,24 @@ build:fpm:amd:
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" .
-  after_script:
-    - curl -F token=${CI_JOB_TOKEN} -F ref=master -F "variables[PHP_TYPE]=${BUILD_TYPE}" -F "variables[PHP_KEY]=${PHP_KEY}" -F "variables[VERSION]=${VERSION}" -F "variables[RUNTIME]=true" https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-  tags: [ jitesoft, buildx, protected ]
+  tags: [ buildx, protected ]
 
-containerize:fpm:
+containerize.cli:
   extends: .containerize
-  needs:
-    - job: build:fpm:amd
-      artifacts: true
-    - job: build:fpm:arm
-      artifacts: true
+  variables:
+    PHP_TYPE: "cli"
+  before_script:
+    - |
+      INCLUDE_TAGS=""
+      if [ "${PHP_KEY}" == "${LATEST}" ]; then
+        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
+      fi
+    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
+    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
+    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
+
+containerize.fpm:
+  extends: .containerize
   variables:
     PHP_TYPE: "fpm"
   before_script:
@@ -327,39 +227,45 @@ containerize:fpm:
     - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION}-fpm,${PHP_KEY}-fpm)"
     - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
 
-containerize:cli:
-  extends: .containerize
-  needs:
-    - job: build:cli:amd
-      artifacts: true
-    - job: build:cli:arm
-      artifacts: true
-  variables:
-    PHP_TYPE: "cli"
-  before_script:
-    - |
-      INCLUDE_TAGS=""
-      if [ "${PHP_KEY}" == "${LATEST}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli,ghcr.io/jitesoft/php,jitesoft/php latest,stable) $(helper jitesoft/php,ghcr.io/jitesoft/php latest-cli,stable-cli)"
-      fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/cli ${VERSION},${PHP_KEY})"
-    - COMMON_TAGS="$(helper jitesoft/php,ghcr.io/jitesoft/php ${VERSION},${PHP_KEY},${VERSION}-cli,${PHP_KEY}-cli)"
-    - TAG_LIST="${GITLAB_TAGS} ${COMMON_TAGS} ${INCLUDE_TAGS}"
-
-containerize:runtime:
-  stage: containerize
+create:cache:
   rules:
-    - if: "$RUNTIME"
-      when: always
+    - if: "$BUILD"
+      when: on_success
     - when: never
+  stage: .post
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
-    - |
-      INCLUDE_TAGS=""
-      if [ "${PHP_KEY}" == "${LATEST}" ]; then
-        INCLUDE_TAGS="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} latest,stable)"
-      fi
-    - GITLAB_TAGS="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} ${VERSION},${PHP_KEY})"
-    - TAG_LIST="${INCLUDE_TAGS} ${GITLAB_TAGS}"
-    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_TYPE="${PHP_TYPE}" --build-arg PHP_VERSION="${PHP_KEY}" -f runtime/Dockerfile .
-  tags: [ jitesoft, buildx, protected ]
+    - echo "${VERSION}" > "version${PHP_KEY}.txt"
+  cache:
+    key: php-versions
+    policy: pull-push
+    paths:
+      - version8.0.txt
+      - version7.4.txt
+      - version7.3.txt
+
+scan:
+  stage: .post
+  extends: .scan.container.trivy.remote
+  rules:
+    - if: "$SCAN"
+      when: always
+    - if: "$BUILD"
+      when: on_success
+    - when: never
+  parallel:
+    matrix:
+      - { IMAGE: "fpm" }
+      - { IMAGE: "cli" }
+  before_script:
+    - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/${IMAGE}:${VERSION}"
+
+trigger:
+  stage: .post
+  rules:
+    - if: "$BUILD"
+      when: on_success
+    - when: never
+  trigger:
+    project: jitesoft/dockerfiles/composer-alpine
+    branch: master
