@@ -9,9 +9,9 @@ check:
   stage: .pre
   parallel:
     matrix:
-      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "", GIT_STRATEGY: none }
-      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: none }
-      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8", GIT_STRATEGY: none }
+      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "old", GIT_STRATEGY: "none" }
+      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: "none" }
+      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8", GIT_STRATEGY: "none" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -124,7 +124,6 @@ download:
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
         --with-openssl \
-        --with-mhash \
         --with-sodium \
         --with-password-argon2 \
         --with-mysqli \
@@ -167,7 +166,7 @@ build:amd:
   extends: .build
   parallel:
     matrix:
-      - { TYPE_FLAGS: "", BUILD_TYPE: "cli", ARCH: "amd64" }
+      - { TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli", ARCH: "amd64" }
       - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "amd64" }
 
 build:arm:
@@ -176,7 +175,7 @@ build:arm:
   extends: .build
   parallel:
     matrix:
-      - { TYPE_FLAGS: "", BUILD_TYPE: "cli", ARCH: "arm64" }
+      - { TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli", ARCH: "arm64" }
       - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "arm64" }
 
 .containerize:
