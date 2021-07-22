@@ -5,6 +5,7 @@ stages:
   - pre
   - build
   - containerize
+  - runtime
 
 check:
   stage: pre
@@ -238,6 +239,23 @@ containerize.fpm:
       done
     - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/fpm ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${FPM_TAGS})"
 
+containerize.runtime:
+  rules:
+    - if: '$BUILD && $PHP_KEY != "8.0"'
+      when: always
+    - when: never
+  parallel:
+    matrix:
+      - { PHP_TYPE: "cli" }
+      - { PHP_TYPE: "fpm" }
+  stage: runtime
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
+  script:
+    - TAGS="${TAGS},${VERSION},${PHP_KEY}"
+    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} ${TAGS})"
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" -f runtime/Dockerfile .
+  tags: [ buildx, protected ]
+
 create:cache:
   rules:
     - if: "$BUILD"
@@ -268,34 +286,8 @@ scan:
     matrix:
       - { IMAGE: "fpm" }
       - { IMAGE: "cli" }
+      - { IMAGE: "runtime/fpm" }
+      - { IMAGE: "runtime/cli" }
   before_script:
     - export SCANNING_IMAGE_NAME="${CI_REGISTRY_IMAGE}/${IMAGE}:${VERSION}"
 
-trigger:
-  stage: .post
-  rules:
-    - if: "$BUILD"
-      when: on_success
-    - when: never
-  trigger:
-    project: jitesoft/dockerfiles/composer-alpine
-    branch: master
-
-trigger.runtime:
-  stage: .post
-  rules:
-    - if: "$BUILD"
-      when: on_success
-    - when: never
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
-  script:
-    - echo "Triggering build of runtime ${VERSION}"
-    - |
-      curl \
-          -F token=${CI_JOB_TOKEN} \
-          -F ref=master \
-          -F "variables[PHP_KEY]=${PHP_KEY}" \
-          -F "variables[VERSION]=${VERSION}" \
-          -F "variables[RUNTIME]=true" \
-          https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-      fi
