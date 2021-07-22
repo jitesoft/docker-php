@@ -53,7 +53,6 @@ gpg:import:
   rules:
     - changes:
         - gpg-keys.txt
-      when: always
     - when: never
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   stage: .pre
@@ -93,6 +92,9 @@ download:
       - keys.out
 
 .build:
+  needs:
+    - job: download
+      artifacts: true
   image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
   stage: build
   rules:
@@ -186,6 +188,8 @@ build:arm:
       artifacts: true
     - job: build:arm
       artifacts: true
+    - job: download
+      artifacts: true
   rules:
     - if: "$BUILD"
       when: on_success
@@ -193,6 +197,7 @@ build:arm:
   stage: containerize
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   script:
+    - mv php.tar.xz binaries/
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg BUILD_TYPE="${PHP_TYPE}" .
   tags: [ buildx, protected ]
 
