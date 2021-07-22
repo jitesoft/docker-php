@@ -110,7 +110,7 @@ download:
     - export CFLAGS="${CFLAGS} -fstack-protector-strong -fpic -fpie -O2"
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
-    - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
+    - adduser -u 82 -D -S -G www-data www-data
     - echo "Building ${VERSION}"
     - cd src
     - EXTRA="--with-pear"

@@ -36,9 +36,7 @@ RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && cp /tmp/php-bin/php.tar.xz /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
- && set -eux; \
-    addgroup -g ${WWWDATA_GUID} -S www-data; \
-    adduser -u ${WWWDATA_GUID} -D -S -G www-data www-data \
+ && adduser -u ${WWWDATA_GUID} -D -S -G www-data www-data \
  && chown www-data:www-data /var/www/html \
  && chmod 777 /var/www/html \
  && runDeps="$( \
