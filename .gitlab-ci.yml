@@ -9,11 +9,9 @@ check:
   stage: .pre
   parallel:
     matrix:
-      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "" }
-      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7" }
-      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8" }
-  variables:
-    GIT_STRATEGY: none
+      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "", GIT_STRATEGY: none }
+      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: none }
+      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8", GIT_STRATEGY: none }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -93,17 +91,13 @@ download:
       - keys.out
 
 .build:
-  parallel:
-    matrix:
-      - { TYPE_FLAGS: "", BUILD_TYPE: "cli" }
-      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
   stage: build
   rules:
     - if: "$BUILD"
       when: on_success
     - when: never
-  before_script:
+  script:
     - export CCACHE_DIR="${CI_PROJECT_DIR}/ccache"
     - apk add --no-cache oniguruma-dev argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev dpkg-dev
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
@@ -114,7 +108,6 @@ download:
     - mkdir src
     - tar -Jxhf php.tar.xz -C src/ --strip-components=1
     - addgroup -g 82 -S www-data && adduser -u 82 -D -S -G www-data www-data
-  script:
     - echo "Building ${VERSION}"
     - cd src
     - EXTRA="--with-pear"
@@ -172,15 +165,19 @@ build:amd:
   tags:
     - "native-amd64"
   extends: .build
-  variables:
-    ARCH: "amd64"
+  parallel:
+    matrix:
+      - { TYPE_FLAGS: "", BUILD_TYPE: "cli", ARCH: "amd64" }
+      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "amd64" }
 
 build:arm:
   tags:
     - "native-aarch64"
   extends: .build
-  variables:
-    ARCH: "arm64"
+  parallel:
+    matrix:
+      - { TYPE_FLAGS: "", BUILD_TYPE: "cli", ARCH: "arm64" }
+      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "arm64" }
 
 .containerize:
   needs:
