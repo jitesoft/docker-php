@@ -258,6 +258,18 @@ containerize.runtime:
   script:
     - TAGS="${TAGS},${VERSION},${PHP_KEY}"
     - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/runtime/${PHP_TYPE} ${TAGS})"
+    - |
+      TAGS="${TAGS},${VERSION},${PHP_KEY}"
+      EX_TAGS=""; counter=0
+      for tag in ${TAGS//,/ }; do
+        if [ $counter == 0 ]; then
+          EX_TAGS="${tag}-runtime-${PHP_TYPE}"
+        else
+          EX_TAGS="${EX_TAGS},${tag}-runtime-${PHP_TYPE}"
+        fi
+        counter=$((counter+1))
+      done
+    - TAG_LIST="${TAG_LIST} $(helper ghcr.io/jitesoft/php,jitesoft/php ${EX_TAGS})"
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg PHP_TYPE="${PHP_TYPE}" -f runtime/Dockerfile .
   tags: [ buildx, protected ]
 
