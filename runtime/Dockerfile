@@ -18,4 +18,4 @@ RUN apk add --no-cache --virtual .build-deps coreutils $PHPIZE_DEPS \
  && php-ext install gmp zip gd \
  && php-ext enable redis imagick \
  && apk del .build-deps \
- && apk add --no-cache --virtual .runtime gd gmp freetype libltdl libzip libwebp xz libjpeg-turbo libpng file imagemagick
+ && apk add --no-cache --virtual .runtime gd gmp freetype libltdl libzip libgomp libwebp xz libjpeg-turbo libpng file imagemagick
