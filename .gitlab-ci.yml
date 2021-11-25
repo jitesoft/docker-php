@@ -13,7 +13,8 @@ check:
     matrix:
       - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "old", GIT_STRATEGY: "none" }
       - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: "none" }
-      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "latest,8", GIT_STRATEGY: "none" }
+      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "8.0", GIT_STRATEGY: "none" }
+      - { MINOR: "8.1", GREP_EXP: '(?<=>php-)([8]\.[1]\.[0-9]{1,2})', TAGS: "8,8.1", GIT_STRATEGY: "none" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -293,6 +294,7 @@ create:cache:
     key: php-versions
     policy: pull-push
     paths:
+      - version8.1.txt
       - version8.0.txt
       - version7.4.txt
       - version7.3.txt
