@@ -11,7 +11,6 @@ check:
   stage: pre
   parallel:
     matrix:
-      - { MINOR: "7.3", GREP_EXP: '(?<=>php-)([7]\.[3]\.[0-9]{1,2})', TAGS: "old", GIT_STRATEGY: "none" }
       - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: "none" }
       - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "8.0", GIT_STRATEGY: "none" }
       - { MINOR: "8.1", GREP_EXP: '(?<=>php-)([8]\.[1]\.[0-9]{1,2})', TAGS: "8,8.1", GIT_STRATEGY: "none" }
@@ -116,10 +115,7 @@ download:
     - adduser -u 82 -D -S -G www-data www-data
     - echo "Building ${VERSION}"
     - cd src
-    - EXTRA="--with-pear"
-    # If the php version is 7.3 or lower, it requires pcre and libxml flags.
-    # And if its 7.4 or above, the --with-pear flag is required to include pear.
-    - if [ "${VERSION}" == "7.3" ]; then EXTRA="--with-pcre-regex --with-libxml-dir"; fi
+    - EXTRA=""
     - |
       ./configure ${TYPE_FLAGS} \
         --prefix=/usr/local \
@@ -134,6 +130,7 @@ download:
         --with-password-argon2 \
         --with-mysqli \
         --with-pdo-mysql \
+        --with-pear \
         --with-pdo-sqlite=/usr \
         --with-sqlite3=/usr \
         --with-zlib \
@@ -143,8 +140,7 @@ download:
         --enable-calendar \
         --enable-ftp \
         --enable-mbstring \
-        --enable-mysqlnd \
-        ${EXTRA}
+        --enable-mysqlnd
     - make -j -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
