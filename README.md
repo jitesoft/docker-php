@@ -27,11 +27,9 @@ These might change during it's lifetime.
     * `8.1-fpm`, `fpm`, `latest-fpm`, `stable-fpm` 
     * `8.0-fpm`
     * `7.4-fpm`
-    * `7.3-fpm`
     * `8.1`, `cli`, `8.1-cli`, `stable`, `stable-cli`, `latest`, `latest-cli`
     * `8.0`, `8.0-cli`
     * `7.4`, `7.4-cli`
-    * `7.3`, `7.3-cli`
 * `jitesoft/php` (runtime)
   * `8.1-runtime-fpm`, `latest-runtime-fpm`, `stable-runtime-fpm`, `fpm-runtime`
   * `8.0-runtime-fpm`
@@ -46,51 +44,41 @@ These might change during it's lifetime.
     * `8.1`, `latest`, `stable`
     * `8.0`
     * `7.4`
-    * `7.3`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
   * `8.1`, `latest`, `stable`
   * `8.0`
     * `7.4`
-    * `7.3`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/cli`
   * `8.1`, `latest`, `stable`
   * `8.0`
   * `7.4`
-  * `7.3`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/fpm`
   * `8.1`, `latest`, `stable`
   * `8.0`
   * `7.4`
-  * `7.3`
   
 ### GitHub
 
 * `ghcr.io/jitesoft/php`
     * `8.1-fpm`, `latest-fpm`, `stable-fpm`, `fpm`
     * `8.0-fpm`
-    * `7.4-fpm`,
-    * `7.3-fpm`
+    * `7.4-fpm`
     * `8.1`, `cli`, `8.1-cli`, `latest-cli` `stable-cli`, `stable`, `latest`
     * `8.0-cli`, `8.0`
     * `7.4-cli`, `7.4`
-    * `7.3-cli`, `7.3`
 * `ghcr.io/jitesoft/php` (runtime)
     * `8.1-runtime-fpm`, `latest-runtime-fpm`, `stable-runtime-fpm`, `fpm-runtime`
     * `8.0-runtime-fpm`
-    * `7.4-runtime-fpm`,
-    * `7.3-runtime-fpm`
+    * `7.4-runtime-fpm`
     * `8.1-runtime`, `8.1-runtime-cli`, `latest-runtime-cli` `stable-runtime-cli`, `stable-runtime`, `latest-runtime`
     * `8.0-runtime-cli`, `8.0-runtime`
     * `7.4-runtime-cli`, `7.4-runtime`
-    * `7.3-runtime-cli`, `7.3-runtime`
 
 ### Quay.io
 
 * `quay.io/jitesoft/php`
     * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
-    * `7.3-fpm`
     * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
-    * `7.3-cli`, `7.3`
 
 _Observe: Push to quay.io currently disabled and images might be old due to quay not fully supporting multi-arch images._
 
