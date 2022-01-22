@@ -3,6 +3,8 @@ FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:3.14
 ARG PHP_VERSION
 ARG BUILD_TYPE
 ARG TARGETARCH
+ARG BUILD_TIME
+ARG PHP_MINOR
 
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
@@ -12,7 +14,17 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       com.jitesoft.project.repo.issues="https://gitlab.com/jitesoft/dockerfiles/php/issues" \
       com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/php" \
       com.jitesoft.app.php.version="${PHP_VERSION}" \
-      com.jitesoft.app.php.type="${BUILD_TYPE}"
+      com.jitesoft.app.php.type="${BUILD_TYPE}" \
+      # Open container labels
+      org.opencontainers.image.version="${PHP_VERSION}" \
+      org.opencontainers.image.created="${BUILD_TIME}" \
+      org.opencontainers.image.description="PHP ${BUILD_TYPE} ${PHP_MINOR} on alpine linux" \
+      org.opencontainers.image.vendor="Jitesoft" \
+      org.opencontainers.image.source="https://gitlab.com/jitesoft/dockerfiles/php" \
+      # Artifact hub annotations
+      io.artifacthub.package.alternative-locations="oci://registry.gitlab.com/jitesoft/dockerfiles/php/${BUILD_TYPE},oci://index.docker.io/jitesoft/php,oci://ghcr.io/jitesoft/php" \
+      io.artifacthub.package.readme-url="https://gitlab.com/jitesoft/dockerfiles/php/-/raw/master/README.md" \
+      io.artifacthub.package.logo-url="https://jitesoft.com/favicon-96x96.png"
 
 ENV PHP_INI_DIR="/usr/local/etc/php" \
     PHPIZE_DEPS="autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c" \
@@ -25,7 +37,6 @@ ARG WWWDATA_GUID="82"
 ARG PHP_VERSION
 ARG BUILD_TYPE
 ARG TARGETARCH
-ARG PHP_MINOR
 
 ENV WWWDATA_GUID="${WWWDATA_GUID}"
 
