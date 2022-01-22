@@ -10,7 +10,7 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       com.jitesoft.project.repo.uri="https://gitlab.com/jitesoft/dockerfiles/php" \
       com.jitesoft.project.repo.issues="https://gitlab.com/jitesoft/dockerfiles/php/issues" \
       com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/php/runtime/${PHP_TYPE}" \
-      com.jitesoft.project.app.php.variant="runtime"
+      com.jitesoft.project.app.php.variant="runtime" \
       # Open container labels
       org.opencontainers.image.version="${PHP_VERSION}" \
       org.opencontainers.image.created="${BUILD_TIME}" \
