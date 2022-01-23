@@ -1,6 +1,7 @@
 ARG PHP_VERSION
 ARG PHP_TYPE
 ARG BUILD_TIME
+ARG PHP_MINOR
 
 FROM registry.gitlab.com/jitesoft/dockerfiles/php/${PHP_TYPE}:${PHP_VERSION}
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
