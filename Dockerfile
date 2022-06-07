@@ -18,7 +18,7 @@ LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       # Open container labels
       org.opencontainers.image.version="${PHP_VERSION}" \
       org.opencontainers.image.created="${BUILD_TIME}" \
-      org.opencontainers.image.description="PHP ${BUILD_TYPE} ${PHP_MINOR} on alpine linux" \
+      org.opencontainers.image.description="PHP on alpine linux" \
       org.opencontainers.image.vendor="Jitesoft" \
       org.opencontainers.image.source="https://gitlab.com/jitesoft/dockerfiles/php" \
       # Artifact hub annotations
