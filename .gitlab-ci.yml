@@ -96,7 +96,7 @@ download:
   needs:
     - job: download
       artifacts: true
-  image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc/buildbase/3.16:latest
   stage: build
   rules:
     - if: "$BUILD"
