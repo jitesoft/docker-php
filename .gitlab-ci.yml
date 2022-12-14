@@ -11,7 +11,6 @@ check:
   stage: pre
   parallel:
     matrix:
-      - { MINOR: "7.4", GREP_EXP: '(?<=>php-)([7]\.[4]\.[0-9]{1,2})', TAGS: "7", GIT_STRATEGY: "none" }
       - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "8.0", GIT_STRATEGY: "none" }
       - { MINOR: "8.1", GREP_EXP: '(?<=>php-)([8]\.[1]\.[0-9]{1,2})', TAGS: "8.1", GIT_STRATEGY: "none" }
       - { MINOR: "8.2", GREP_EXP: '(?<=>php-)([8]\.[2]\.[0-9]{1,2})', TAGS: "8,8.2,latest", GIT_STRATEGY: "none" }
@@ -294,7 +293,6 @@ create:cache:
       - version8.2.txt
       - version8.1.txt
       - version8.0.txt
-      - version7.4.txt
 
 scan:
   stage: .post
