@@ -19,66 +19,30 @@ That is, the images are built for both amd64 and arm64.
 Support for x-arch is available on DockerHub and GitLab until quay.io supports multi-arch manifests.
 
 The runtime images includes the following extra extensions: gd (jpg, webp, png), zip, imagick, gmp and redis.  
-These might change during it's lifetime.
+These might change during its lifetime.
 
 ### DockerHub
 
 * `jitesoft/php`
-    * `8.1-fpm`, `fpm`, `latest-fpm`, `stable-fpm` 
-    * `8.0-fpm`
-    * `7.4-fpm`
-    * `8.1`, `cli`, `8.1-cli`, `stable`, `stable-cli`, `latest`, `latest-cli`
-    * `8.0`, `8.0-cli`
-    * `7.4`, `7.4-cli`
-* `jitesoft/php` (runtime)
-  * `8.1-runtime-fpm`, `latest-runtime-fpm`, `stable-runtime-fpm`, `fpm-runtime`
-  * `8.0-runtime-fpm`
-  * `7.4-runtime-fpm`,
-  * `8.1-runtime`, `8.1-runtime-cli`, `latest-runtime-cli` `stable-runtime-cli`, `stable-runtime`, `latest-runtime`
-  * `8.0-runtime-cli`, `8.0-runtime`
-  * `7.4-runtime-cli`, `7.4-runtime`
+
+Runtime images are tagged as `<version>-runtime-<type>`
   
 ### GitLab
 
 * `registry.gitlab.com/jitesoft/dockerfiles/php/fpm`
-    * `8.1`, `latest`, `stable`
-    * `8.0`
-    * `7.4`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/cli`
-  * `8.1`, `latest`, `stable`
-  * `8.0`
-    * `7.4`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/cli`
-  * `8.1`, `latest`, `stable`
-  * `8.0`
-  * `7.4`
 * `registry.gitlab.com/jitesoft/dockerfiles/php/runtime/fpm`
-  * `8.1`, `latest`, `stable`
-  * `8.0`
-  * `7.4`
   
 ### GitHub
 
 * `ghcr.io/jitesoft/php`
-    * `8.1-fpm`, `latest-fpm`, `stable-fpm`, `fpm`
-    * `8.0-fpm`
-    * `7.4-fpm`
-    * `8.1`, `cli`, `8.1-cli`, `latest-cli` `stable-cli`, `stable`, `latest`
-    * `8.0-cli`, `8.0`
-    * `7.4-cli`, `7.4`
-* `ghcr.io/jitesoft/php` (runtime)
-    * `8.1-runtime-fpm`, `latest-runtime-fpm`, `stable-runtime-fpm`, `fpm-runtime`
-    * `8.0-runtime-fpm`
-    * `7.4-runtime-fpm`
-    * `8.1-runtime`, `8.1-runtime-cli`, `latest-runtime-cli` `stable-runtime-cli`, `stable-runtime`, `latest-runtime`
-    * `8.0-runtime-cli`, `8.0-runtime`
-    * `7.4-runtime-cli`, `7.4-runtime`
+
+Runtime images are tagged as `<version>-runtime-<type>`
 
 ### Quay.io
 
 * `quay.io/jitesoft/php`
-    * `fpm`, `7.4-fpm`, `latest-fpm`, `stable-fpm`
-    * `cli`, `latest-cli` `7.4-cli`, `stable-cli`, `7.4`, `stable`, `latest`
 
 _Observe: Push to quay.io currently disabled and images might be old due to quay not fully supporting multi-arch images._
 
