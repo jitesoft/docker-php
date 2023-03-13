@@ -266,7 +266,7 @@ containerize.runtime:
         fi
         counter=$((counter+1))
       done
-    - TAG_LIST="${TAG_LIST} $(helper ghcr.io/jitesoft/php,jitesoft/php ${EX_TAGS})"
+    - TAG_LIST="${TAG_LIST} $(helper ghcr.io/jitesoft/php,jitesoft/php,quay.io/jitesoft/php ${EX_TAGS})"
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} --build-arg BUILD_TIME="$(date -Iseconds)" --build-arg PHP_MINOR="${PHP_KEY}" --build-arg PHP_VERSION="${VERSION}" --build-arg PHP_TYPE="${PHP_TYPE}" -f runtime/Dockerfile .
   tags: [ buildx, protected ]
 
