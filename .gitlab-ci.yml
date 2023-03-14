@@ -215,7 +215,7 @@ containerize.cli:
         fi
         counter=$((counter+1))
       done
-    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/cli ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${CLI_TAGS},${TAGS})"
+    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/cli ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php,quay.io/jitesoft/php ${CLI_TAGS},${TAGS})"
 
 containerize.fpm:
   extends: .containerize
@@ -234,7 +234,7 @@ containerize.fpm:
         fi
         counter=$((counter+1))
       done
-    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/fpm ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php ${FPM_TAGS})"
+    - TAG_LIST="$(helper ${CI_REGISTRY_IMAGE}/fpm ${TAGS}) $(helper ghcr.io/jitesoft/php,jitesoft/php,quay.io/jitesoft/php ${FPM_TAGS})"
 
 containerize.runtime:
   needs:
