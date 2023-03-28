@@ -16,8 +16,6 @@ This is temporary and will change in the future.
 Sources are built natively on x86_64 and aarch64 and images built as cross-architecture builds with buildx.  
 That is, the images are built for both amd64 and arm64.  
 
-Support for x-arch is available on DockerHub and GitLab until quay.io supports multi-arch manifests.
-
 The runtime images includes the following extra extensions: gd (jpg, webp, png), zip, imagick, gmp and redis.  
 These might change during its lifetime.
 
@@ -44,7 +42,7 @@ Runtime images are tagged as `<version>-runtime-<type>`
 
 * `quay.io/jitesoft/php`
 
-_Observe: Push to quay.io currently disabled and images might be old due to quay not fully supporting multi-arch images._
+Runtime images are tagged as `<version>-runtime-<type>`
 
 ## Image labels
 
@@ -59,11 +57,8 @@ The files in this repository are released under the [MIT license](https://gitlab
 
 Jitesoft images are built via GitLab CI on runners hosted by the following wonderful organisations:
 
-<a href="https://fosshost.org/">
-  <img src="https://raw.githubusercontent.com/jitesoft/misc/master/sponsors/fosshost.png" height="128" alt="Fosshost logo" />
-</a>
-<a href="https://www.aarch64.com/">
-  <img src="https://raw.githubusercontent.com/jitesoft/misc/master/sponsors/aarch64.png" height="128" alt="Aarch64 logo" />
+<a href="https://osuosl.org/" target="_blank" title="Oregon State University - Open Source Lab">
+    <img src="https://jitesoft.com/images/oslx128.webp" alt="Oregon State University - Open Source Lab">
 </a>
 
 _The companies above are not affiliated with Jitesoft or any Jitesoft Projects directly._
