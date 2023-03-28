@@ -12,7 +12,7 @@ stages:
   - runtime
 
 update-readme:
-  stage: check
+  stage: pre
   extends: .readme-check.v2
   variables:
     PUSHRM_FILE: "$CI_PROJECT_DIR/README.md"
