@@ -24,7 +24,6 @@ check:
   stage: pre
   parallel:
     matrix:
-      - { MINOR: "8.0", GREP_EXP: '(?<=>php-)([8]\.[0]\.[0-9]{1,2})', TAGS: "8.0", GIT_STRATEGY: "none" }
       - { MINOR: "8.1", GREP_EXP: '(?<=>php-)([8]\.[1]\.[0-9]{1,2})', TAGS: "8.1", GIT_STRATEGY: "none" }
       - { MINOR: "8.2", GREP_EXP: '(?<=>php-)([8]\.[2]\.[0-9]{1,2})', TAGS: "8.2", GIT_STRATEGY: "none" }
       - { MINOR: "8.3", GREP_EXP: '(?<=>php-)([8]\.[3]\.[0-9]{1,2})', TAGS: "8,8.3,latest", GIT_STRATEGY: "none" }
