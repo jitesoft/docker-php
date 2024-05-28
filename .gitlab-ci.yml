@@ -154,7 +154,7 @@ download:
         --enable-ftp \
         --enable-mbstring \
         --enable-mysqlnd
-    - make -j -i -l V= | awk 'NR%20==0 {print NR,$0}'
+    - make -j 4 -i -l V= | awk 'NR%20==0 {print NR,$0}'
     - find -type f -name '*.a' -delete
     - make install
     - cp php.ini-* /usr/local/
