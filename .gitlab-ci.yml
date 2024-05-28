@@ -306,7 +306,6 @@ create:cache:
       - version8.3.txt
       - version8.2.txt
       - version8.1.txt
-      - version8.0.txt
 
 scan:
   stage: .post

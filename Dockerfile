@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:3.16
+FROM registry.gitlab.com/jitesoft/dockerfiles/alpine:3.19
 ARG PHP_VERSION
 ARG BUILD_TYPE
 ARG TARGETARCH
