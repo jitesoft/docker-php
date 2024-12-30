@@ -139,8 +139,11 @@ download:
         --with-config-file-path=/usr/local/etc/php \
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
+        --with-pic \
         --with-openssl \
         --with-sodium \
+        --with-mhash \
+        --with-readline \
         --with-password-argon2 \
         --with-mysqli \
         --with-pdo-mysql \
@@ -148,7 +151,6 @@ download:
         --with-pdo-sqlite=/usr \
         --with-sqlite3=/usr \
         --with-zlib \
-        --with-zlib-dir \
         --with-curl \
         --enable-exif \
         --enable-calendar \
@@ -182,8 +184,8 @@ build:amd:
   extends: .build
   parallel:
     matrix:
-      - { TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli", ARCH: "amd64" }
-      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "amd64" }
+      - { TYPE_FLAGS: "--enable-phpdbg --enable-phpdbg-readline", BUILD_TYPE: "cli", ARCH: "amd64" }
+      - { TYPE_FLAGS: "--enable-fpm --disable-phpdbg --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "amd64" }
 
 build:arm:
   tags:
@@ -191,8 +193,8 @@ build:arm:
   extends: .build
   parallel:
     matrix:
-      - { TYPE_FLAGS: "--with-mhash", BUILD_TYPE: "cli", ARCH: "arm64" }
-      - { TYPE_FLAGS: "--enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "arm64" }
+      - { TYPE_FLAGS: "--enable-phpdbg --enable-phpdbg-readline", BUILD_TYPE: "cli", ARCH: "arm64" }
+      - { TYPE_FLAGS: "--enable-fpm --disable-phpdbg --with-fpm-user=www-data --with-fpm-group=www-data", BUILD_TYPE: "fpm", ARCH: "arm64" }
 
 .containerize:
   needs:
