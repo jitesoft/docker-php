@@ -118,7 +118,7 @@ download:
     - when: never
   script:
     - export CCACHE_DIR="${CI_PROJECT_DIR}/ccache"
-    - apk add --no-cache oniguruma-dev argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev dpkg-dev
+    - apk add --no-cache oniguruma-dev argon2-dev curl-dev libedit-dev libsodium-dev libxml2-dev openssl-dev sqlite-dev dpkg-dev readline-dev
     - if [ ! -d "ccache" ]; then mkdir ccache; fi
     - export PATH="/usr/lib/ccache/bin:$PATH"
     - ccache -s
