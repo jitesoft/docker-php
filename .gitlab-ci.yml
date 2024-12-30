@@ -75,7 +75,7 @@ gpg:import:
     - if [ -f keys.out ]; then gpg --import keys.out; fi
     - |
       for key in `cat gpg-keys.txt`; do
-        gpg --list-keys ${key} || (gpg --keyserver pgp.mit.edu --recv-keys "${key}" || gpg --keyserver keyserver.pgp.com --recv-keys "${key}" || gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}")
+        gpg --list-keys ${key} || (gpg --keyserver keyserver.ubuntu.com --recv-keys "${key}" || gpg --keyserver pgp.mit.edu --recv-keys "${key}" || gpg --keyserver keyserver.pgp.com --recv-keys "${key}" || gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}")
       done
     - gpg --export > keys.out
   cache:
