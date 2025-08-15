@@ -37,7 +37,7 @@ check:
     - when: never
   script:
     - touch version${MINOR}.txt
-    - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
+    - FULL_VERSION=$(wget -qO- https://www.php.net/downloads.php?source=Y | grep -oP "${GREP_EXP}" | sort -V -f | tail -n1)
     - |
       if [ ! -z "${FORCE_BUILD+x}" ] || [ "$(cat version${MINOR}.txt)" != "${FULL_VERSION}" ]; then
         echo "Triggering build of ${FULL_VERSION}"
