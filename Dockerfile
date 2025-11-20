@@ -43,7 +43,7 @@ ENV WWWDATA_GUID="${WWWDATA_GUID}"
 RUN --mount=type=bind,source=./binaries,target=/tmp/php-bin \
     apk add --virtual .phpize-deps $PHPIZE_DEPS \
  && mkdir -p /var/www/html /usr/local/etc/php/conf.d /usr/src \
- && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz \
+ && apk add --no-cache --virtual .runtime-deps ca-certificates musl curl tar openssl xz libgcc \
  && tar -xzhf /tmp/php-bin/php-${TARGETARCH}-${BUILD_TYPE}.tar.gz -C /usr/local \
  && cp /tmp/php-bin/php.tar.xz /usr/src/php.tar.xz \
  && mv /usr/local/php.ini-* /usr/local/etc/php/ \
