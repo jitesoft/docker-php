@@ -48,7 +48,7 @@ check:
           -F "variables[VERSION]=${FULL_VERSION}" \
           -F "variables[BUILD]=true" \
           -F "variables[TAGS]=${TAGS}" \
-          -F "variables[DOWNLOAD_URL]=https://www.php.net/get/php-${FULL_VERSION}.tar.xz/from/this/mirror" \
+          -F "variables[DOWNLOAD_URL]=https://www.php.net/distributions/php-${FULL_VERSION}.tar.xz" \
           https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
       else
         echo "Triggering scan of ${FULL_VERSION}"
