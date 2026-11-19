@@ -27,7 +27,8 @@ check:
       - { MINOR: "8.2", GREP_EXP: '(?<=>php-)([8]\.[2]\.[0-9]{1,2})', TAGS: "8.2", GIT_STRATEGY: "none" }
       - { MINOR: "8.3", GREP_EXP: '(?<=>php-)([8]\.[3]\.[0-9]{1,2})', TAGS: "8.3", GIT_STRATEGY: "none" }
       - { MINOR: "8.4", GREP_EXP: '(?<=>php-)([8]\.[4]\.[0-9]{1,2})', TAGS: "8,8.4", GIT_STRATEGY: "none" }
-      - { MINOR: "8.5", GREP_EXP: '(?<=>php-)([8]\.[5]\.[0-9]{1,2})', TAGS: "8,8.5,latest", GIT_STRATEGY: "none" }
+      - { MINOR: "8.5", GREP_EXP: '(?<=>php-)([8]\.[5]\.[0-9]{1,2})', TAGS: "8,8.5", GIT_STRATEGY: "none" }
+      - { MINOR: "8.6", GREP_EXP: '(?<=>php-)([8]\.[6]\.[0-9]{1,2})', TAGS: "8,8.6,latest", GIT_STRATEGY: "none" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -306,6 +307,7 @@ create:cache:
     key: php-versions
     policy: pull-push
     paths:
+      - version8.6.txt
       - version8.5.txt
       - version8.4.txt
       - version8.3.txt
