@@ -139,7 +139,7 @@ download:
         --with-config-file-path=/usr/local/etc/php \
         --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
         --enable-option-checking=fatal \
-        --with-pic \
+        --enable-pic \
         --with-openssl \
         --with-sodium \
         --with-mhash \
